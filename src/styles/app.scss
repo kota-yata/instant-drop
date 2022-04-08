@@ -4,10 +4,20 @@ html, body {
   padding: 0;
   margin: 0;
   width: 100vw;
-  background: $black;
-  color: $white;
-  font-size: 20px;
-  font-family: Arial, Helvetica, sans-serif;
+  background: $bg-white;
+  color: $letter-gray;
+  font-size: 16px;
+  font-family: "Inter",
+  -apple-system,
+  BlinkMacSystemFont,
+  Roboto,
+  'Segoe UI',
+  Helvetica,
+  Arial,
+  sans-serif,
+  'Apple Color Emoji',
+  'Segoe UI Emoji',
+  'Segoe UI Symbol';
   font-weight: 500;
 }
 
@@ -20,8 +30,26 @@ a {
   }
 }
 
+h1 {
+  font-size: 24px;
+}
+
+h2 {
+  font-size: 20px;
+}
+
+p {
+  font-size: 16px;
+}
 input,
 button {
   font-size: inherit;
   font-family: inherit;
+  border: none;
+}
+  
+.container {
+  background: $bg-gray-primary;
+  border-radius: 10px;
+  padding: 10px;
 }

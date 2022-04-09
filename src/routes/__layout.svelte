@@ -9,6 +9,7 @@
 <style lang="scss">
   main {
     margin: 0 auto;
-    width: 85%;
+    width: 100vw;
+    height: 100vh;
   }
 </style>

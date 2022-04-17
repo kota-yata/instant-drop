@@ -5,3 +5,10 @@
 export interface Locals {
   userid: string;
 }
+
+export interface messageObject {
+  dataType: 'String' | 'List',
+  stringData?: string,
+  listData?: string, // comma as a deliminator
+  log: string
+}

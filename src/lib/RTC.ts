@@ -1,26 +1,24 @@
 export class RTC {
-  private localConnection: RTCPeerConnection;
-  private remoteConnection: RTCPeerConnection;
+  private CONFIG: RTCConfiguration = { 'iceServers': [{ 'urls': 'stun:stun.1.google.com:19302' }] };
+  private peerConnection: RTCPeerConnection;
   private sendChannel: RTCDataChannel;
   private receiveChannel: RTCDataChannel;
-  constructor(channel: string) {
+  // Signaling
+  constructor(remoteId: string) {
+    console.log('signaling');
+  }
+  public async startConnection(channel: string): Promise<void> {
     // Set up the local peer
-    this.localConnection = new RTCPeerConnection();
-    this.sendChannel = this.localConnection.createDataChannel(channel);
+    this.peerConnection = new RTCPeerConnection(this.CONFIG);
+    this.sendChannel = this.peerConnection.createDataChannel(channel);
     this.sendChannel.onopen = this.sendChannel.onclose = this.handleSendChannelStatusChange;
     // Set up the remote peer
-    this.remoteConnection = new RTCPeerConnection();
-    this.remoteConnection.ondatachannel = this.receiveChannelCallback;
+    // this.remoteConnection.ondatachannel = this.receiveChannelCallback;
     // Set up the ICE candidates
-    this.localConnection.onicecandidate = event => !event.candidate || this.remoteConnection.addIceCandidate(event.candidate).catch((reason) => {
-      throw Error(reason);
-    });
-    this.remoteConnection.onicecandidate = event => !event.candidate || this.localConnection.addIceCandidate(event.candidate).catch((reason) => {
-      throw Error(reason);
-    });
-  }
-  public async startConnection(): Promise<void> {
-    const offer = await this.localConnection.createOffer({
+    // this.localConnection.onicecandidate = event => !event.candidate || this.remoteConnection.addIceCandidate(event.candidate).catch((reason) => {
+    //   throw Error(reason);
+    // });
+    const offer = await this.peerConnection.createOffer({
       iceRestart: false,
       offerToReceiveAudio: false,
       offerToReceiveVideo: false

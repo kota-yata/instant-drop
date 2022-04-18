@@ -4,7 +4,7 @@
   import LeftPeers from '$lib/components/sections/left-peers.svelte';
   import RightInfo from '$lib/components/sections/right-info.svelte';
   import RightLog from '$lib/components/sections/right-log.svelte';
-import { logContainerStore } from '$lib/store';
+  import { logContainer } from '$lib/store';
   import { WS } from '$lib/ws';
   import { onMount } from 'svelte';
   import '../styles/app.scss';
@@ -12,6 +12,8 @@ import { logContainerStore } from '$lib/store';
   onMount(() => {
     const ws = new WS();
   });
+
+  $: store = logContainer.store;
 </script>
 
 <svelte:head>
@@ -25,7 +27,7 @@ import { logContainerStore } from '$lib/store';
     <LeftData />
   </div>
   <div class="right">
-    <RightLog logContainer = { $logContainerStore } />
+    <RightLog logContainer={$store} />
     <RightInfo />
   </div>
 </div>
@@ -39,7 +41,7 @@ import { logContainerStore } from '$lib/store';
     padding: $container-mp;
     display: flex;
     justify-content: space-between;
-    & > .left { 
+    & > .left {
       width: 60%;
     }
     & > .right {

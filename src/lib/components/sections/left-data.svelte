@@ -3,7 +3,7 @@
     { name: '2020StudentData.csv', from: 'BF30', lastModified: '2022-04-07', type: 'csv' },
     { name: '2020StudentData.csv', from: 'BF30', lastModified: '2022-04-07', type: 'csv' },
     { name: '2020StudentData.csv', from: 'BF30', lastModified: '2022-04-07', type: 'csv' },
-    { name: '2020StudentData.csv', from: 'BF30', lastModified: '2022-04-07', type: 'csv' },
+    { name: '2020StudentData.csv', from: 'BF30', lastModified: '2022-04-07', type: 'csv' }
   ];
 </script>
 
@@ -12,15 +12,15 @@
   <div class="left-data-container">
     {#if data.length > 0}
       {#each data as d}
-      <div class="data" role="button">
-        <h2>{d.name}</h2>
-        <p>From : {d.from}</p>
-        <p>Last Modified : {d.lastModified}</p>
-        <p>Type : {d.type}</p>
-      </div>
+        <div class="data" role="button">
+          <h2>{d.name}</h2>
+          <p>From : {d.from}</p>
+          <p>Last Modified : {d.lastModified}</p>
+          <p>Type : {d.type}</p>
+        </div>
       {/each}
     {:else}
-    <h2>You haven't received any data yet</h2>
+      <h2>You haven't received any data yet</h2>
     {/if}
   </div>
 </div>

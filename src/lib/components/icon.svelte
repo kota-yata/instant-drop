@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let iconString = "";
+  export let iconString = '';
 </script>
 
 <div class="icon">{iconString}</div>

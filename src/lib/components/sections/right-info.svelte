@@ -1,18 +1,29 @@
-<script>
-import Icon from "../icon.svelte";
+<script lang="ts">
+  import { id } from '$lib/store';
+  import { UserAgent } from '$lib/utils/userAgent';
+  import { onMount } from 'svelte';
+
+  import Icon from '../icon.svelte';
+
+  let os = 'Unknown';
+  let browser = 'Unknown';
+  onMount(() => {
+    os = UserAgent.getOS();
+    browser = UserAgent.getBrowser();
+  });
 </script>
+
 <div class="right-info container">
   <h2>Your Info</h2>
   <div class="right-info-icid">
     <!--Icon and id will show up here-->
     <Icon iconString="😀" />
-    <h2>DS45</h2>
+    <h2>{$id}</h2>
   </div>
   <div class="right-info-meta">
     <p>IP Address : 127.0.0.1</p>
-    <p>User Agent : Chromium</p>
-    <p>Sent : 10MB</p>
-    <p>Received : 159MB</p>
+    <p>OS : {os}</p>
+    <p>Browser : {browser}</p>
   </div>
 </div>
 

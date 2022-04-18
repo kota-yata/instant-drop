@@ -1,4 +1,4 @@
-import { logContainerStore } from './store';
+import { logContainer, id } from './store';
 import type { messageObject } from './types';
 
 export class WS {
@@ -16,24 +16,20 @@ export class WS {
     }
   }
   public sendMessage(txt: string): void {
-    try {
-      if (this.isOpen) {
-        this.ws.send(txt);
-        return;
-      };
-      setTimeout(() => {
-        this.sendMessage(txt);
-      }, 5000);
-    } catch (err) {
-      throw Error(err);
-    }
+    if (this.isOpen) {
+      this.ws.send(txt);
+      return;
+    };
+    setTimeout(() => {
+      this.sendMessage(txt);
+    }, 5000);
   }
   public handleMessage(e: MessageEvent): void {
     const messageObject: messageObject = JSON.parse(e.data);
-    console.log(messageObject);
-    logContainerStore.update((value) => {
-      value.push(messageObject.log);
-      return value;
+    if (messageObject.dataType === 'String') id.set(messageObject.stringData);
+    logContainer.push({
+      log: messageObject.log,
+      timeStamp: messageObject.timeStamp
     });
   }
 }

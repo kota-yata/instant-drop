@@ -1,22 +1,17 @@
 <script lang="ts">
-  export let logContainer = ['2022/04/07 21:41:22 Connection Established', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message received',
-    '2022/04/07 21:41:22 Message sent', '2022/04/07 21:41:22 Connection Interrupted', '2022/04/07 21:41:22 Connection Established', '2022/04/07 21:41:22 Message received',
-    '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message sent', '2022/04/07 21:41:22 Connection Established',
-    '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message sent', '2022/04/07 21:41:22 Connection Interrupted',
-    '2022/04/07 21:41:22 Connection Established', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message sent',
-    '2022/04/07 21:41:22 Connection Established', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message received',
-    '2022/04/07 21:41:22 Message sent', '2022/04/07 21:41:22 Connection Interrupted', '2022/04/07 21:41:22 Connection Established', '2022/04/07 21:41:22 Message received',
-    '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message sent', '2022/04/07 21:41:22 Connection Established',
-    '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message sent', '2022/04/07 21:41:22 Connection Interrupted',
-    '2022/04/07 21:41:22 Connection Established', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message received', '2022/04/07 21:41:22 Message sent'
-  ];
+  import type { log } from '$lib/types';
+
+  export let logContainer: log[];
 </script>
 
 <div class="right-log container">
   <h2>Connection Log</h2>
   <div class="right-log-container">
     {#each logContainer as log}
-    <p>{log}</p>
+      <div>
+        <div class="right-log-container-timeStamp">{log.timeStamp}</div>
+        <div class="right-log-container-log">{log.log}</div>
+      </div>
     {/each}
   </div>
 </div>
@@ -31,6 +26,14 @@
       font-size: 15px;
       height: calc(100% - 45px);
       overflow-y: auto;
+      & > div {
+        line-height: 20px;
+        display: flex;
+      }
+      &-timeStamp {
+        font-weight: 700;
+        width: 80px;
+      }
     }
   }
 </style>

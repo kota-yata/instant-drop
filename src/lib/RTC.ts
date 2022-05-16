@@ -1,68 +1,79 @@
+import { LogListStore, logStore } from './store';
+
+/**
+ * Class for WebRTC datachannel connection
+ */
 export class RTC {
-  private CONFIG: RTCConfiguration = { 'iceServers': [{ 'urls': 'stun:stun.1.google.com:19302' }] };
+  private readonly CONFIG: RTCConfiguration = { 'iceServers': [{ 'urls': 'stun:stun.1.google.com:19302' }] };
   private peerConnection: RTCPeerConnection;
-  private sendChannel: RTCDataChannel;
-  private receiveChannel: RTCDataChannel;
-  // Signaling
-  constructor(remoteId: string) {
-    console.log('signaling');
-  }
-  public async startConnection(channel: string): Promise<void> {
-    // Set up the local peer
+  private dataChannel: RTCDataChannel;
+  private logStore: LogListStore;
+  /**
+   * Creates a new RTCPeerConnection instance, and adds event listeners for icecandidate, connectionstatechange and datachannel.
+   */
+  constructor() {
     this.peerConnection = new RTCPeerConnection(this.CONFIG);
-    this.sendChannel = this.peerConnection.createDataChannel(channel);
-    this.sendChannel.onopen = this.sendChannel.onclose = this.handleSendChannelStatusChange;
-    // Set up the remote peer
-    // this.remoteConnection.ondatachannel = this.receiveChannelCallback;
-    // Set up the ICE candidates
-    // this.localConnection.onicecandidate = event => !event.candidate || this.remoteConnection.addIceCandidate(event.candidate).catch((reason) => {
-    //   throw Error(reason);
-    // });
+    this.logStore = new LogListStore(logStore);
+    this.peerConnection.addEventListener('icecandidate', this.elIceCandidate); // Ice Candidate update event
+    this.peerConnection.addEventListener('connectionstatechange', this.elConnectionStateChange); // Connection state update event
+    this.peerConnection.addEventListener('datachannel', this.elDataChannel); // Data Channel constructor
+    this.logStore.pushWithCurrentTimeStamp('New RTC Instance created');
+  }
+  private elIceCandidate(event: RTCPeerConnectionIceEvent): void {
+    if (!event.candidate) return;
+    this.logStore.pushWithCurrentTimeStamp('New local ICE Candidate detected');
+  }
+  private elConnectionStateChange(): void {
+    this.logStore.pushWithCurrentTimeStamp(`Connection state changed: ${this.peerConnection.connectionState}`);
+  }
+  private elDataChannel(event: RTCDataChannelEvent): void {
+    this.dataChannel = event.channel;
+    this.dataChannel.addEventListener('open', () => {
+      this.logStore.pushWithCurrentTimeStamp('RTC Data Channel opened');
+    });
+    this.dataChannel.addEventListener('close', () => {
+      this.logStore.pushWithCurrentTimeStamp('RTC Data Channel closed');
+    });
+    this.logStore.pushWithCurrentTimeStamp('RTC Data Channel initialized');
+  }
+  /**
+   * Creates a local SDP
+   * @returns Local SDP
+   */
+  public async createOffer(): Promise<RTCSessionDescriptionInit> {
     const offer = await this.peerConnection.createOffer({
       iceRestart: false,
       offerToReceiveAudio: false,
       offerToReceiveVideo: false
     });
-    await this.localConnection.setLocalDescription(offer);
-    // In a real application, this would require a signaling server to exchange the description object.
-    await this.remoteConnection.setRemoteDescription(this.localConnection.localDescription);
-    const answer = await this.remoteConnection.createAnswer();
-    this.remoteConnection.setLocalDescription(answer);
-    await this.localConnection.setRemoteDescription(this.remoteConnection.localDescription).catch((reason) => {
-      throw Error(reason);
-    });
+    await this.peerConnection.setLocalDescription(offer);
+    this.logStore.pushWithCurrentTimeStamp('Local SDP created');
+    return offer;
   }
-  public sendMessage(message: string): void {
-    this.sendChannel.send(message);
-    console.log('Message sent');
+  /**
+   * Called when receiving an offer. Sets the offer from the first argument as a remote SDP, then creates an answer.
+   * @param offer the offer from a remote peer
+   * @returns Local SDP
+   */
+  public async createAnswer(offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit> {
+    this.peerConnection.setRemoteDescription(offer);
+    const answer = await this.peerConnection.createAnswer();
+    await this.peerConnection.setLocalDescription(answer);
+    return answer;
   }
-  public disconnect(): void {
-    this.sendChannel.close();
-    this.receiveChannel.close();
-    this.localConnection.close();
-    this.remoteConnection.close();
-    this.sendChannel = this.receiveChannel = this.localConnection = this.remoteConnection = null;
+  /**
+   * Called when receiving an answer. Sets the answer as a remote SDP
+   * @param sdp the answer from a remote peer
+   */
+  public async handleAnswer(sdp: RTCSessionDescriptionInit): Promise<void> {
+    const remoteDesc = new RTCSessionDescription(sdp);
+    await this.peerConnection.setRemoteDescription(remoteDesc);
   }
-  private handleSendChannelStatusChange(event: RTCDataChannelEvent) {
-    if (!this.sendChannel) return;
-    if (this.sendChannel.readyState === 'open') {
-      console.log('Data Channel Open : ', event);
-    } else {
-      console.log('Data Channel Closed : ', event);
-    }
+  public send(data: string): void;
+  public send(data: Blob): void;
+  public send(data: ArrayBuffer): void;
+  public send(data: ArrayBufferView): void;
+  public send(data: any): void {
+    this.dataChannel.send(data);
   }
-  private handleReceiveChannelStatusChange(event: RTCDataChannelEvent) {
-    if (!this.receiveChannel) return;
-    console.log(`Receive channel's status has changed to `, this.receiveChannel.readyState);
-    console.log('Event', event);
-  }
-  private handleReceiveData(event: MessageEvent) {
-    console.log('Following message received : ', event.data);
-  }
-  private receiveChannelCallback(event: RTCDataChannelEvent) {
-    this.receiveChannel = event.channel;
-    this.receiveChannel.onmessage = this.handleReceiveData;
-    this.receiveChannel.onopen = this.handleReceiveChannelStatusChange;
-    this.receiveChannel.onclose = this.handleReceiveChannelStatusChange;
-  };
 };

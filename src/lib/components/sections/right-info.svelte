@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { id } from '$lib/store';
+  import { idStore } from '$lib/store';
   import { UserAgent } from '$lib/utils/userAgent';
   import { onMount } from 'svelte';
 
@@ -18,7 +18,7 @@
   <div class="right-info-icid">
     <!--Icon and id will show up here-->
     <Icon iconString="😀" />
-    <h2>{$id}</h2>
+    <h2>{$idStore}</h2>
   </div>
   <div class="right-info-meta">
     <p>IP Address : 127.0.0.1</p>

@@ -8,9 +8,20 @@ export interface log {
 }
 
 export interface messageObject {
-  dataType: 'String' | 'List',
+  dataType: 'LocalId' | 'Peers' | 'Offer' | 'Answer' | 'Error',
   stringData?: string,
   listData?: string, // comma as a deliminator
   log: string,
   timeStamp: string
+}
+
+export interface offerObject {
+  from: string,
+  to: string,
+  offer: string,
+}
+
+export interface peer {
+  id: string,
+  icon: string
 }

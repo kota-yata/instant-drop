@@ -1,18 +1,25 @@
 <script lang="ts">
+  import type { RTC } from '$lib/rtc';
+  import { idStore, peersStore } from '$lib/store';
   import Icon from '../icon.svelte';
 
-  export let peers = [
-    { icon: '🔨', id: 'BF30' },
-    { icon: '💪', id: 'BF30' },
-    { icon: '🏘', id: 'BF30' },
-    { icon: '🔨', id: 'BF30' }
-  ];
+  export let rtc: RTC;
+
+  const peerOnClick = async (id: string) => {
+    const sdp = await rtc.createOffer();
+    const offerObj = {
+      from: $idStore,
+      to: id,
+      offer: JSON.stringify(sdp)
+    };
+    rtc.send(JSON.stringify(offerObj));
+  }
 </script>
 
 <div class="left-peers">
-  {#if peers.length > 0}
-    {#each peers as peer}
-      <div class="peer" role="button">
+  {#if $peersStore.length > 0}
+    {#each $peersStore as peer}
+      <div class="peer" role="button" on:click="{() => { peerOnClick(peer.id) }}">
         <Icon iconString={peer.icon} />
         <h2>{peer.id}</h2>
       </div>

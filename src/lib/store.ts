@@ -16,6 +16,7 @@ export class ObjectListStore<StoreType> {
   }
   public push(data: StoreType): void {
     this.store.update((value) => {
+      console.log('value', value);
       value.push(data);
       return value;
     });

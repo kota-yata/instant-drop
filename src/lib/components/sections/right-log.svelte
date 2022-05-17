@@ -1,13 +1,11 @@
 <script lang="ts">
-  import type { log } from '$lib/types';
-
-  export let logContainer: log[];
+  import { logStore } from '$lib/store';
 </script>
 
 <div class="right-log container">
   <h2>Connection Log</h2>
   <div class="right-log-container">
-    {#each logContainer as log}
+    {#each $logStore as log}
       <div>
         <div class="right-log-container-timeStamp">{log.timeStamp}</div>
         <div class="right-log-container-log">{log.log}</div>

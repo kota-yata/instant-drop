@@ -4,22 +4,27 @@ import type { messageObject } from './types';
 export class WS {
   private ws: WebSocket;
   private isOpen = false;
-  private logStore: LogListStore;
+  private logListStore: LogListStore;
   constructor() {
-    this.logStore = new LogListStore(logStore);
+    this.logListStore = new LogListStore(logStore);
+    console.log(this);
     try {
       this.ws = new WebSocket('ws://localhost:8080/ws');
+      this.logListStore.pushWithCurrentTimeStamp('Connected to the signaling server');
     } catch (err) {
-      this.logStore.pushWithCurrentTimeStamp('Failed to connect to the signaling server');
+      this.logListStore.pushWithCurrentTimeStamp('Failed to connect to the signaling server');
       throw Error(err);
     }
     this.ws.onerror = () => {
-      this.logStore.pushWithCurrentTimeStamp('Something went wrong on WebSocket');
+      this.logListStore.pushWithCurrentTimeStamp('Something went wrong on WebSocket');
     };
     this.ws.onopen = () => {
       this.isOpen = true;
     };
-    this.ws.onmessage = this.handleMessage;
+    // Intentionally make Immediately Invoked Function Expression (IIFE) as this onmessage event passes WebSocket object as "this"
+    this.ws.onmessage = (event: MessageEvent) => {
+      this.handleMessage(event);
+    };
   }
   public sendMessage(txt: string): void {
     if (this.isOpen) {
@@ -30,7 +35,7 @@ export class WS {
       this.sendMessage(txt);
     }, 5000);
   }
-  public handleMessage(e: MessageEvent): void {
+  private handleMessage(e: MessageEvent): void {
     const messageObject: messageObject = JSON.parse(e.data);
     switch (messageObject.dataType) {
     case 'LocalId':
@@ -38,14 +43,14 @@ export class WS {
       break;
     case 'Peers':
       // eslint-disable-next-line no-case-declarations
-      const peers = messageObject.listData.split('').map((peerId) => ({
+      const peers = messageObject.listData.split(',').map((peerId) => ({
         id: peerId,
         icon: '😀'
       }));
       peersStore.set(peers);
       break;
     }
-    this.logStore.push({
+    this.logListStore.push({
       log: messageObject.log,
       timeStamp: messageObject.timeStamp
     });

@@ -4,6 +4,9 @@
  */
 export const getTimestamp = (): string => {
   const day = new Date();
-  const timeStamp = `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}`;
+  const hours = day.getHours().toString().padStart(2, '0');
+  const minutes = day.getMinutes().toString().padStart(2, '0');
+  const seconds = day.getSeconds().toString().padStart(2, '0');
+  const timeStamp = `${hours}:${minutes}:${seconds}`;
   return timeStamp;
 };

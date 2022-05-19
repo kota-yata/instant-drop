@@ -1,24 +1,47 @@
 <script lang="ts">
   import type { RTC } from '$lib/rtc';
-  import { idStore, peersStore } from '$lib/store';
-  import type { peer } from '$lib/types';
+  import { idStore, LogListStore, logStore, peersStore } from '$lib/store';
+  import type { messageObject, offerObject, peer } from '$lib/types';
+  import { onDestroy, onMount } from 'svelte';
   import Icon from '../icon.svelte';
+  import { supported } from 'browser-fs-access';
+  import type { WS } from '$lib/ws';
 
+  export let ws: WS;
   export let rtc: RTC;
 
+  const logListStore = new LogListStore(logStore);
+
   $: filteredPeers = [] as peer[];
-  peersStore.subscribe((peers) => {
+  const unsub = peersStore.subscribe((peers) => {
     filteredPeers = peers.filter((peer) => peer.id !== $idStore);
+  })
+  onDestroy(() => {
+    unsub();
+  });
+
+  onMount(() => {
+    if (supported) {
+      logListStore.pushWithCurrentTimeStamp('File System Access API is supported');
+    } else {
+      logListStore.pushWithCurrentTimeStamp('File System Access API is not supported');
+    }
   })
 
   const peerOnClick = async (id: string) => {
     const sdp = await rtc.createOffer();
-    const offerObj = {
+    const offerObj: offerObject = {
       from: $idStore,
       to: id,
       offer: JSON.stringify(sdp)
+    }
+    const messageObj: messageObject = {
+      dataType: 'Offer',
+      stringData: JSON.stringify(offerObj),
+      log: '',
+      timeStamp: ''
     };
-    rtc.send(JSON.stringify(offerObj));
+    ws.sendMessage(JSON.stringify(messageObj));
   }
 </script>
 

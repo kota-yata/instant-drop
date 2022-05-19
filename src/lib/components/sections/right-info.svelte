@@ -7,9 +7,11 @@
 
   let os = 'Unknown';
   let browser = 'Unknown';
+  let lang = 'Unknown';
   onMount(() => {
     os = UserAgent.getOS();
     browser = UserAgent.getBrowser();
+    lang = window.navigator.language;
   });
 </script>
 
@@ -21,9 +23,9 @@
     <h2>{$idStore}</h2>
   </div>
   <div class="right-info-meta">
-    <p>IP Address : 127.0.0.1</p>
     <p>OS : {os}</p>
     <p>Browser : {browser}</p>
+    <p>Language : {lang}</p>
   </div>
 </div>
 

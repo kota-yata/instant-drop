@@ -9,10 +9,11 @@
   import { onMount } from 'svelte';
   import '../styles/app.scss';
 
-  let rtc: RTC
+  let ws: WS;
+  let rtc: RTC;
   onMount(() => {
-    const ws = new WS();
     rtc = new RTC();
+    ws = new WS(rtc);
   });
 </script>
 
@@ -23,7 +24,7 @@
 <div class="index">
   <div class="left">
     <LeftHeader />
-    <LeftPeers {rtc} />
+    <LeftPeers {ws} {rtc} />
     <LeftData />
   </div>
   <div class="right">

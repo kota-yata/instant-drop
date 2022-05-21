@@ -7,11 +7,9 @@
 
   let os = 'Unknown';
   let browser = 'Unknown';
-  let lang = 'Unknown';
   onMount(() => {
     os = UserAgent.getOS();
     browser = UserAgent.getBrowser();
-    lang = window.navigator.language;
   });
 </script>
 
@@ -25,7 +23,6 @@
   <div class="right-info-meta">
     <p>OS : {os}</p>
     <p>Browser : {browser}</p>
-    <p>Language : {lang}</p>
   </div>
 </div>
 
@@ -38,8 +35,8 @@
     &-icid {
       display: flex;
       align-items: center;
-      height: 70px;
-      font-size: 30px;
+      height: 60px;
+      font-size: 25px;
       margin-bottom: 15px;
       & > h2 {
         margin-left: 15px;

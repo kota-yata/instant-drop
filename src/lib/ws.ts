@@ -1,19 +1,19 @@
-import type { RTC } from './rtc';
+import MessageObject from './messageObject';
+import StringDataObject from './stringDataObject';
+import { RTC } from './rtc';
 import { logStore, idStore, LogListStore, peersStore } from './store';
-import type { messageObject } from './types';
-import type { offerObject } from './types.d';
+import type { individualRTC, MessageObjectInterface, StringDataObjectInterface } from './types';
 
 export class WS {
   private ws: WebSocket;
-  private rtc: RTC;
+  public rtcInstanceList: individualRTC[] = [];
   private isOpen = false;
   private logListStore: LogListStore;
-  private myId = '';
-  constructor(rtc: RTC) {
-    this.rtc = rtc;
+  private localId: string;
+  constructor() {
     this.logListStore = new LogListStore(logStore);
     idStore.subscribe((id) => {
-      this.myId = id;
+      this.localId = id;
     });
     try {
       this.ws = new WebSocket('ws://localhost:8080/ws');
@@ -33,6 +33,10 @@ export class WS {
       this.handleMessage(event);
     };
   }
+  /**
+   * Sends message if WebSocket is open, otherwise waits for 5s and recursively tries to send again
+   * @param txt string data you want to send
+   */
   public sendMessage(txt: string): void {
     if (this.isOpen) {
       this.ws.send(txt);
@@ -42,37 +46,82 @@ export class WS {
       this.sendMessage(txt);
     }, 5000);
   }
+  /**
+   * handles the received message based off the data type
+   * @param e MessageEvent from WebSocket.onmessage
+   */
   private async handleMessage(e: MessageEvent): Promise<void> {
-    const messageObject: messageObject = JSON.parse(e.data);
+    const messageObject: MessageObjectInterface = JSON.parse(e.data);
     this.logListStore.push({
       log: messageObject.log,
       timeStamp: messageObject.timeStamp
     });
-    if (messageObject.dataType === 'LocalId') {
-      idStore.set(messageObject.stringData);
-    } else if (messageObject.dataType === 'Peers') {
-      const peers = messageObject.listData.split(',').map((peerId) => ({
-        id: peerId,
-        icon: '😀'
-      }));
-      peersStore.set(peers);
-    } else if (messageObject.dataType === 'Offer') {
-      const offerObject: offerObject = JSON.parse(messageObject.stringData);
-      const offerSdp: RTCSessionDescriptionInit = JSON.parse(offerObject.offer);
-      const answerSdp: RTCSessionDescriptionInit = await this.rtc.createAnswer(offerSdp);
-      const answerObject = {
-        from: this.myId,
-        to: offerObject.from,
-        offer: JSON.stringify(answerSdp)
-      };
-      const reply: messageObject = {
-        dataType: 'Answer',
-        stringData: JSON.stringify(answerObject),
-        log: '',
-        timeStamp: ''
-      };
-      this.sendMessage(JSON.stringify(reply));
-      this.logListStore.pushWithCurrentTimeStamp('Answer sent');
+    switch (messageObject.dataType) {
+    case 'LocalId':
+      this.handleMessageLocalId(messageObject);
+      break;
+    case 'Peers':
+      this.handleMessagePeers(messageObject);
+      break;
+    case 'Offer':
+      await this.handleMessageOffer(messageObject);
+      break;
+    case 'Answer':
+      await this.handleMessageAnswer(messageObject);
+      break;
+    case 'IceCandidate':
+      this.handleMessageIceCandidate(messageObject);
+      break;
+    default:
+      this.logListStore.pushWithCurrentTimeStamp('Unknown message detected');
     }
+  }
+  private handleMessageLocalId(messageObject: MessageObject) {
+    idStore.set(messageObject.stringData);
+  }
+  private handleMessagePeers(messageObject: MessageObject) {
+    const peers = messageObject.listData.split(',').map((peerId) => ({
+      id: peerId,
+      icon: '😀'
+    }));
+    peersStore.set(peers);
+  }
+  private async handleMessageOffer(messageObject: MessageObject) {
+    const offerObject: StringDataObjectInterface = JSON.parse(messageObject.stringData);
+    const r = this.rtcInstanceList.find((r) => r.id === offerObject.from);
+    if (r) {
+      this.logListStore.pushWithCurrentTimeStamp(`The connection with ${offerObject.from} has already been established`);
+      return;
+    }
+    const rtc = new RTC(this, offerObject.from);
+    this.rtcInstanceList.push({ id: offerObject.from, rtc });
+    const offerSdp: RTCSessionDescriptionInit = JSON.parse(offerObject.offer);
+    const answerSdp: RTCSessionDescriptionInit = await rtc.createAnswer(offerSdp);
+    const answerObject: string = new StringDataObject(this.localId, offerObject.from, JSON.stringify(answerSdp)).toString();
+    const reply: string = new MessageObject('Answer', answerObject).toString();
+    this.sendMessage(reply);
+    this.logListStore.pushWithCurrentTimeStamp('Answer sent');
+  }
+  private async handleMessageAnswer(messageObject: MessageObject) {
+    const answerObject: StringDataObjectInterface = JSON.parse(messageObject.stringData);
+    const answerSdp = JSON.parse(answerObject.offer);
+    const r = this.rtcInstanceList.find((r) => r.id === answerObject.from);
+    if (!r) {
+      const errorMessage = 'The corresponding RTC instance to the ID was not found';
+      this.logListStore.pushWithCurrentTimeStamp(errorMessage);
+      throw new Error(errorMessage);
+    }
+    await r.rtc.handleAnswer(answerSdp);
+    this.logListStore.pushWithCurrentTimeStamp(`P2P connection with peer ID: ${answerObject.from} established`);
+  }
+  private handleMessageIceCandidate(messageObject: MessageObject) {
+    const stringData: StringDataObject = JSON.parse(messageObject.stringData);
+    const rtcAndId = this.rtcInstanceList.find((r) => r.id === stringData.from);
+    if (!rtcAndId) {
+      this.logListStore.pushWithCurrentTimeStamp('Corresponding RTC instance to the remote peer was not found');
+      return;
+    }
+    rtcAndId.rtc.addIceCandidate(JSON.parse(stringData.offer));
+    this.logListStore.pushWithCurrentTimeStamp('New ICE candidate added');
   }
 }

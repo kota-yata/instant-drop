@@ -1,14 +1,15 @@
 <script lang="ts">
-  import type { RTC } from '$lib/rtc';
   import { idStore, LogListStore, logStore, peersStore } from '$lib/store';
-  import type { messageObject, offerObject, peer } from '$lib/types';
+  import type { peer } from '$lib/types';
   import { onDestroy, onMount } from 'svelte';
   import Icon from '../icon.svelte';
-  import { supported } from 'browser-fs-access';
+  import { fileOpen, supported } from 'browser-fs-access';
   import type { WS } from '$lib/ws';
+  import { RTC } from '$lib/rtc';
+  import messageObject from '$lib/messageObject';
+  import offerObject from '$lib/stringDataObject';
 
   export let ws: WS;
-  export let rtc: RTC;
 
   const logListStore = new LogListStore(logStore);
 
@@ -29,19 +30,34 @@
   })
 
   const peerOnClick = async (id: string) => {
-    const sdp = await rtc.createOffer();
-    const offerObj: offerObject = {
-      from: $idStore,
-      to: id,
-      offer: JSON.stringify(sdp)
+    let rtc: RTC;
+    let r = ws.rtcInstanceList.find((r) => r.id === id);
+    // If this is the first time connecting to the remote peer
+    if (!r) {
+      rtc = new RTC(ws, id);
+      ws.rtcInstanceList.push({ id, rtc });
+      const sdp = await rtc.createOffer();
+      const offerObj = new offerObject($idStore, id, JSON.stringify(sdp)).toString();
+      const messageObj = new messageObject('Offer', offerObj).toString();
+      ws.sendMessage(messageObj);
+    } else {
+      rtc = r.rtc;
+      logListStore.pushWithCurrentTimeStamp(`Connection with peer ID: ${id} has already been established`);
     }
-    const messageObj: messageObject = {
-      dataType: 'Offer',
-      stringData: JSON.stringify(offerObj),
-      log: '',
-      timeStamp: ''
+    try {
+      const blobs = await fileOpen({
+        multiple: true
+      });
+      blobs.map(async (blob) => {
+        const arrayBuffer = await blob.arrayBuffer();
+        rtc.send(arrayBuffer);
+        console.log('sent');
+      })
+    } catch(err) {
+      if (err.name === 'AbortError') return;
+      logListStore.pushWithCurrentTimeStamp('Something went wrong while opening files');
+      console.error(err);
     };
-    ws.sendMessage(JSON.stringify(messageObj));
   }
 </script>
 

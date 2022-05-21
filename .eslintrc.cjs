@@ -48,7 +48,6 @@ module.exports = {
     'no-useless-catch': 'error',
     'no-useless-concat': 'error',
     'no-useless-escape': 'warn',
-    'no-useless-return': 'error',
     'no-void': 'error',
     'no-with': 'error',
     yoda: ['error', 'never'],

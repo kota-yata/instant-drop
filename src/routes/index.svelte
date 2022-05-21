@@ -10,10 +10,8 @@
   import '../styles/app.scss';
 
   let ws: WS;
-  let rtc: RTC;
   onMount(() => {
-    rtc = new RTC();
-    ws = new WS(rtc);
+    ws = new WS();
   });
 </script>
 
@@ -24,7 +22,7 @@
 <div class="index">
   <div class="left">
     <LeftHeader />
-    <LeftPeers {ws} {rtc} />
+    <LeftPeers {ws} />
     <LeftData />
   </div>
   <div class="right">

@@ -7,21 +7,32 @@ export interface log {
   timeStamp: string
 }
 
-export interface messageObject {
-  dataType: 'LocalId' | 'Peers' | 'Offer' | 'Answer' | 'Error',
-  stringData?: string,
-  listData?: string, // comma as a deliminator
-  log: string,
-  timeStamp: string
+export type dataType = 'LocalId' | 'Peers' | 'Offer' | 'Answer' | 'IceCandidate' | 'Error';
+
+export interface ObjectInterface {
+  public toString(): string;
 }
 
-export interface offerObject {
-  from: string,
-  to: string,
-  offer: string,
+export interface MessageObjectInterface extends ObjectInterface {
+  public dataType: dataType,
+  public stringData?: string,
+  public listData?: string, // comma as a deliminator
+  public log: string,
+  public timeStamp: string,
+}
+
+export interface StringDataObjectInterface extends ObjectInterface {
+  public from: string,
+  public to: string,
+  public offer: string
 }
 
 export interface peer {
   id: string,
   icon: string
+}
+
+export interface individualRTC {
+  id: string,
+  rtc: RTC
 }

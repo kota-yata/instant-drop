@@ -1,9 +1,11 @@
 import { Writable, writable } from 'svelte/store';
+import type { fileObject } from './fileObject';
 import type { log, peer } from './types.d';
 import { getTimestamp } from './utils/timestamp';
 
 export const idStore: Writable<string> = writable('No ID');
 export const peersStore: Writable<peer[]> = writable([]);
+export const filesStore: Writable<fileObject[]> = writable([]);
 export const logStore: Writable<log[]> = writable([]);
 
 /**

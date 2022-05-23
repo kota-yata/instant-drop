@@ -2,7 +2,6 @@ import MessageObject from './messageObject';
 import StringDataObject from './stringDataObject';
 import { idStore, LogListStore, logStore } from './store';
 import type { WS } from './ws';
-import { modifyBandwidth } from './utils/bandwidth';
 
 /**
  * Class for WebRTC datachannel connection
@@ -59,7 +58,6 @@ export class RTC {
       offerToReceiveAudio: false,
       offerToReceiveVideo: false
     });
-    const modifiedOffer = modifyBandwidth(offer);
     await this.peerConnection.setLocalDescription(offer);
     this.logStore.pushWithCurrentTimeStamp('Local SDP created');
     return offer;
@@ -85,7 +83,11 @@ export class RTC {
   }
   public handleMessage(event: MessageEvent): void {
     this.logStore.pushWithCurrentTimeStamp(`Received a message from peer ID: ${this.remoteId}`);
-    console.log('data: ', event.data);
+    const arrayBuffer: ArrayBuffer = event.data;
+    const blob = new Blob([arrayBuffer]);
+    const urlCreator = window.URL || window.webkitURL;
+    const url = urlCreator.createObjectURL(blob);
+    console.log(blob);
   }
   public send(data: string): void;
   public send(data: Blob): void;

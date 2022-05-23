@@ -36,3 +36,22 @@ export interface individualRTC {
   id: string,
   rtc: RTC
 }
+
+export interface fileMetaData {
+  name: string,
+  size: number,
+  type: string,
+  lastModified: number
+}
+
+export interface fragment {
+  total: number,
+  index: number
+}
+
+export interface fileObjectInterface {
+  public meta: fileMetaData
+  public data: ArrayBuffer
+  public isFragmented: boolean,
+  public fragment?: fragment
+}

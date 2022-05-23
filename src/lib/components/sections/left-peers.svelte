@@ -44,11 +44,13 @@
       rtc = r.rtc;
       logListStore.pushWithCurrentTimeStamp(`Connection with peer ID: ${id} has already been established`);
     }
+    // I have to fragment data larger than about 250KB due to the max message size
     try {
       const blobs = await fileOpen({
         multiple: true
       });
       blobs.map(async (blob) => {
+        console.log(blob);
         const arrayBuffer = await blob.arrayBuffer();
         rtc.send(arrayBuffer);
         console.log('sent');

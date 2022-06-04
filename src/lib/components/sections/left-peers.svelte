@@ -6,8 +6,8 @@
   import { fileOpen, supported } from 'browser-fs-access';
   import type { WS } from '$lib/ws';
   import { RTC } from '$lib/rtc';
-  import messageObject from '$lib/messageObject';
-  import offerObject from '$lib/stringDataObject';
+  import messageObject from '$lib/objects/messageObject';
+  import offerObject from '$lib/objects/stringDataObject';
 
   export let ws: WS;
 
@@ -50,7 +50,6 @@
         multiple: true
       });
       blobs.map(async (blob) => {
-        console.log(blob);
         const arrayBuffer = await blob.arrayBuffer();
         rtc.send(arrayBuffer);
         console.log('sent');

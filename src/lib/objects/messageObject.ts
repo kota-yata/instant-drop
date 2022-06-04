@@ -1,4 +1,4 @@
-import type { dataType, MessageObjectInterface } from './types';
+import type { dataType, MessageObjectInterface } from '../types';
 
 export default class MessageObject implements MessageObjectInterface {
   public dataType: dataType;

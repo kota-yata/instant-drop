@@ -1,5 +1,5 @@
-import MessageObject from './messageObject';
-import StringDataObject from './stringDataObject';
+import MessageObject from './objects/messageObject';
+import StringDataObject from './objects/stringDataObject';
 import { idStore, LogListStore, logStore } from './store';
 import type { WS } from './ws';
 

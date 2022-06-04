@@ -1,4 +1,4 @@
-import type { StringDataObjectInterface } from './types';
+import type { StringDataObjectInterface } from '../types';
 
 export default class StringDataObject implements StringDataObjectInterface {
   public from: string;

@@ -1,5 +1,5 @@
-import MessageObject from './messageObject';
-import StringDataObject from './stringDataObject';
+import MessageObject from './objects/messageObject';
+import StringDataObject from './objects/stringDataObject';
 import { RTC } from './rtc';
 import { logStore, idStore, LogListStore, peersStore } from './store';
 import type { individualRTC, MessageObjectInterface, StringDataObjectInterface } from './types';

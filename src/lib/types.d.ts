@@ -43,6 +43,7 @@ export interface fragment {
 }
 
 export interface fileObjectInterface {
+  public dataId: string;
   public type: string
   public dataHash: string
   public isFragmented: boolean,

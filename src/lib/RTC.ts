@@ -2,6 +2,7 @@ import MessageObject from './objects/messageObject';
 import StringDataObject from './objects/stringDataObject';
 import { idStore, LogListStore, logStore } from './store';
 import type { WS } from './ws';
+import type { FileObject } from '$lib/objects/fileObject';
 
 /**
  * Class for WebRTC datachannel connection
@@ -14,6 +15,9 @@ export class RTC {
   private ws: WS;
   private localId: string;
   private remoteId: string;
+  private fragments: {
+    [id: string]: [FileObject, ArrayBuffer][]
+  };
   /**
    * Creates a new RTCPeerConnection instance, and adds event listeners for icecandidate, connectionstatechange and datachannel.
    */
@@ -81,13 +85,30 @@ export class RTC {
     const remoteDesc = new RTCSessionDescription(sdp);
     await this.peerConnection.setRemoteDescription(remoteDesc);
   }
+  /**
+   * Called when receiving a message. Call handleFileObject when the message is string, handleArrayBuffer when the message is array buffer
+   * @param event A message received from the remote peer
+   */
   public handleMessage(event: MessageEvent): void {
     this.logStore.pushWithCurrentTimeStamp(`Received a message from peer ID: ${this.remoteId}`);
-    const arrayBuffer: ArrayBuffer = event.data;
-    const blob = new Blob([arrayBuffer]);
-    const urlCreator = window.URL || window.webkitURL;
-    const url = urlCreator.createObjectURL(blob);
-    console.log(blob);
+    const message = event.data;
+    if (typeof message === 'string') {
+      const fileObject: FileObject = JSON.parse(message);
+      this.handleFileObject(fileObject);
+    } else {
+      this.handleArrayBuffer(message);
+    }
+    // const arrayBuffer: ArrayBuffer = event.data;
+    // const blob = new Blob([arrayBuffer]);
+    // const urlCreator = window.URL || window.webkitURL;
+    // const url = urlCreator.createObjectURL(blob);
+    // console.log(blob);
+  }
+  private handleFileObject(fileObject: FileObject) {
+    console.log(fileObject);
+  }
+  private handleArrayBuffer(arrayBuffer: ArrayBuffer) {
+    console.log(arrayBuffer);
   }
   public send(data: string): void;
   public send(data: Blob): void;

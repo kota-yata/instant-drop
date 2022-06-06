@@ -8,6 +8,8 @@
   import { RTC } from '$lib/rtc';
   import messageObject from '$lib/objects/messageObject';
   import offerObject from '$lib/objects/stringDataObject';
+  import { fragment } from '$lib/utils/fileHandler';
+  import type { FileObject } from '$lib/objects/fileObject';
 
   export let ws: WS;
 
@@ -49,9 +51,12 @@
       const blobs = await fileOpen({
         multiple: true
       });
-      blobs.map(async (blob) => {
-        const arrayBuffer = await blob.arrayBuffer();
-        rtc.send(arrayBuffer);
+      blobs.map(async (blob, index) => {
+        const fragemented: [FileObject, ArrayBuffer][] = await fragment(blob, `${$idStore}-${index}`);
+        fragemented.map(([fileObject, data]) => {
+          rtc.send(JSON.stringify(fileObject));
+          rtc.send(data);
+        });
         console.log('sent');
       })
     } catch(err) {

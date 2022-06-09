@@ -3,6 +3,9 @@ import StringDataObject from './objects/stringDataObject';
 import { idStore, LogListStore, logStore } from './store';
 import type { WS } from './ws';
 import type { FileObject } from '$lib/objects/fileObject';
+import { sha256 } from '$lib/sha256';
+import { FragmentsObject } from './objects/fragmentsObject';
+import Base64 from './base64';
 
 /**
  * Class for WebRTC datachannel connection
@@ -15,13 +18,15 @@ export class RTC {
   private ws: WS;
   private localId: string;
   private remoteId: string;
-  private fragments: {
-    [id: string]: [FileObject, ArrayBuffer][]
-  };
+  private fragments: FragmentsObject;
+  private waitingFileObject: FileObject[]
+  private waitingArrayBuffer: ArrayBuffer[];
   /**
    * Creates a new RTCPeerConnection instance, and adds event listeners for icecandidate, connectionstatechange and datachannel.
    */
   constructor(ws: WS, remoteId: string) {
+    this.waitingFileObject = this.waitingArrayBuffer = [];
+    this.fragments = new FragmentsObject();
     this.logStore = new LogListStore(logStore);
     this.ws = ws;
     this.remoteId = remoteId;
@@ -92,23 +97,46 @@ export class RTC {
   public handleMessage(event: MessageEvent): void {
     this.logStore.pushWithCurrentTimeStamp(`Received a message from peer ID: ${this.remoteId}`);
     const message = event.data;
+    let dataIdCompleted = 'Not Found';
     if (typeof message === 'string') {
       const fileObject: FileObject = JSON.parse(message);
-      this.handleFileObject(fileObject);
+      dataIdCompleted = this.handleFileObject(fileObject);
     } else {
-      this.handleArrayBuffer(message);
+      dataIdCompleted = this.handleArrayBuffer(message);
     }
+    if (dataIdCompleted === 'Not Found') return;
+    this.fragments.reconstruct(dataIdCompleted);
+    // this.fragments.reconstruct();
     // const arrayBuffer: ArrayBuffer = event.data;
     // const blob = new Blob([arrayBuffer]);
     // const urlCreator = window.URL || window.webkitURL;
     // const url = urlCreator.createObjectURL(blob);
     // console.log(blob);
   }
-  private handleFileObject(fileObject: FileObject) {
-    console.log(fileObject);
+  private handleFileObject(fileObject: FileObject): string {
+    const arrayBuffer = this.waitingArrayBuffer.find((ab: ArrayBuffer) => {
+      const base64 = Base64.encode(ab);
+      return sha256(base64) === fileObject.dataHash;
+    });
+    if (!arrayBuffer) {
+      this.waitingFileObject.push(fileObject);
+      return 'Not Found';
+    }
+    const isCompleted = this.fragments.add(fileObject.dataId, [fileObject, arrayBuffer]);
+    const result = isCompleted ? fileObject.dataId : 'Not Found';
+    return result;
   }
-  private handleArrayBuffer(arrayBuffer: ArrayBuffer) {
-    console.log(arrayBuffer);
+  private handleArrayBuffer(arrayBuffer: ArrayBuffer): string {
+    const base64 = Base64.encode(arrayBuffer);
+    const fileObject = this.waitingFileObject.find((obj: FileObject) => obj.dataHash === sha256(base64));
+    // If the corresponding fileObject has not arrived yet, put the arrayBuffer into the waiting list
+    if (!fileObject) {
+      this.waitingArrayBuffer.push(arrayBuffer);
+      return 'Not Found';
+    }
+    const isCompleted = this.fragments.add(fileObject.dataId, [fileObject, arrayBuffer]);
+    const result = isCompleted ? fileObject.dataId : 'Not Found';
+    return result;
   }
   public send(data: string): void;
   public send(data: Blob): void;

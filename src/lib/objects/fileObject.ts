@@ -1,16 +1,18 @@
-import type { fileObjectInterface, fragment } from '../types';
-import { sha256 } from 'js-sha256';
+import type { FileObjectInterface, fragmentOrder } from '../types';
+import { sha256 } from '$lib/sha256';
+import Base64 from '$lib/base64';
 
-export class FileObject implements fileObjectInterface {
+export class FileObject implements FileObjectInterface {
   public dataId: string;
   public type: string;
   public dataHash: string;
   public isFragmented: boolean;
-  public fragment?: fragment;
-  constructor(dataId: string, type: string, data: ArrayBuffer, isFragmented: boolean, fragment?: fragment) {
+  public fragment?: fragmentOrder;
+  constructor(dataId: string, type: string, data: ArrayBuffer, isFragmented: boolean, fragment?: fragmentOrder) {
     this.dataId = dataId;
     this.type = type;
-    this.dataHash = sha256(data);
+    const base64 = Base64.encode(data);
+    this.dataHash = sha256(base64);
     this.isFragmented = isFragmented;
     if (isFragmented) {
       this.fragment = fragment;

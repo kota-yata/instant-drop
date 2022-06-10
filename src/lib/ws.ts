@@ -2,11 +2,11 @@ import MessageObject from './objects/messageObject';
 import StringDataObject from './objects/stringDataObject';
 import { RTC } from './rtc';
 import { logStore, idStore, LogListStore, peersStore } from './store';
-import type { individualRTC, MessageObjectInterface, StringDataObjectInterface } from './types';
+import type { IndividualRTC, MessageObjectInterface, StringDataObjectInterface } from './types';
 
 export class WS {
   private ws: WebSocket;
-  public rtcInstanceList: individualRTC[] = [];
+  public rtcInstanceList: IndividualRTC[] = [];
   private isOpen = false;
   private logListStore: LogListStore;
   private localId: string;

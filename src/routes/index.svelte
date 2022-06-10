@@ -4,7 +4,6 @@
   import LeftPeers from '$lib/components/sections/left-peers.svelte';
   import RightInfo from '$lib/components/sections/right-info.svelte';
   import RightLog from '$lib/components/sections/right-log.svelte';
-  import { RTC } from '$lib/rtc';
   import { WS } from '$lib/ws';
   import { onMount } from 'svelte';
   import '../styles/app.scss';

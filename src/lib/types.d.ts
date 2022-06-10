@@ -1,8 +1,11 @@
+import type { FileObject } from './objects/fileObject';
+import type { LogListStore } from './store';
+
 /*
  * Can be made globally available by placing this
  * inside `global.d.ts` and removing `export` keyword
  */
-export interface log {
+export interface Log {
   log: string
   timeStamp: string
 }
@@ -27,35 +30,40 @@ export interface StringDataObjectInterface extends ObjectInterface {
   public offer: string
 }
 
-export interface peer {
+export interface Peer {
   id: string
   icon: string
 }
 
-export interface individualRTC {
+export interface IndividualRTC {
   id: string
   rtc: RTC
 }
 
-export interface fragmentOrder {
+export interface FragmentOrder {
   total: number
   index: number
 }
 
 export interface FileObjectInterface {
+  public name: string
   public dataId: string
   public type: string
   public dataHash: string
   public isFragmented: boolean
-  public fragment?: fragmentOrder
+  public fragment?: FragmentOrder
 }
 
-export type fragmentSet = [FileObject, ArrayBuffer]
+export interface FragmentSet {
+  fileObject: FileObject
+  arrayBuffer: ArrayBuffer
+}
 
 export interface FragmentsObjectInterface {
   private fragments: {
-    [id: string]: fragmentSet[]
-  },
-  public add(to: string, data: fragmentSet): boolean;
-  public reconstruct(id: string): void;
+    [id: string]: FragmentSet[]
+  }
+  private logStore: LogListStore
+  public add(to: string, data: FragmentSet): boolean
+  public toFile(id: string): File
 }

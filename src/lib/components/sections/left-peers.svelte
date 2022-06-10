@@ -1,6 +1,6 @@
 <script lang="ts">
   import { idStore, LogListStore, logStore, peersStore } from '$lib/store';
-  import type { peer } from '$lib/types';
+  import type { Peer } from '$lib/types';
   import { onDestroy, onMount } from 'svelte';
   import Icon from '../icon.svelte';
   import { fileOpen, supported } from 'browser-fs-access';
@@ -15,7 +15,7 @@
 
   const logListStore = new LogListStore(logStore);
 
-  $: filteredPeers = [] as peer[];
+  $: filteredPeers = [] as Peer[];
   const unsub = peersStore.subscribe((peers) => {
     filteredPeers = peers.filter((peer) => peer.id !== $idStore);
   })
@@ -48,11 +48,11 @@
     }
     // I have to fragment data larger than about 250KB due to the max message size
     try {
-      const blobs = await fileOpen({
+      const blobs: File[] = await fileOpen({
         multiple: true
       });
-      blobs.map(async (blob, index) => {
-        const fragemented: [FileObject, ArrayBuffer][] = await fragment(blob, `${$idStore}-${index}`);
+      blobs.map(async (file: File, index) => {
+        const fragemented: [FileObject, ArrayBuffer][] = await fragment(file, `${$idStore}-${index}`);
         fragemented.map(([fileObject, data]) => {
           rtc.send(JSON.stringify(fileObject));
           rtc.send(data);

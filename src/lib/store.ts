@@ -1,12 +1,11 @@
 import { Writable, writable } from 'svelte/store';
-import type { FileObject } from './objects/fileObject';
-import type { log, peer } from './types.d';
+import type { Log, Peer } from './types.d';
 import { getTimestamp } from './utils/timestamp';
 
 export const idStore: Writable<string> = writable('No ID');
-export const peersStore: Writable<peer[]> = writable([]);
-export const filesStore: Writable<FileObject[]> = writable([]);
-export const logStore: Writable<log[]> = writable([]);
+export const peersStore: Writable<Peer[]> = writable([]);
+export const logStore: Writable<Log[]> = writable([]);
+export const fileStore: Writable<File[]> = writable([]);
 
 /**
  * Make a prototype for a given store
@@ -24,9 +23,9 @@ export class ObjectListStore<StoreType> {
   }
 };
 
-export class LogListStore extends ObjectListStore<log> {
+export class LogListStore extends ObjectListStore<Log> {
   public pushWithCurrentTimeStamp(log: string): void {
-    const logObject: log = {
+    const logObject: Log = {
       log,
       timeStamp: getTimestamp()
     };

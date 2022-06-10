@@ -1,6 +1,6 @@
 import MessageObject from './objects/messageObject';
 import StringDataObject from './objects/stringDataObject';
-import { idStore, LogListStore, logStore } from './store';
+import { fileStore, idStore, LogListStore, logStore, ObjectListStore } from './store';
 import type { WS } from './ws';
 import type { FileObject } from '$lib/objects/fileObject';
 import { sha256 } from '$lib/sha256';
@@ -15,6 +15,7 @@ export class RTC {
   private peerConnection: RTCPeerConnection;
   private dataChannel: RTCDataChannel;
   private logStore: LogListStore;
+  private fileStore: ObjectListStore<File>;
   private ws: WS;
   private localId: string;
   private remoteId: string;
@@ -27,6 +28,7 @@ export class RTC {
   constructor(ws: WS, remoteId: string) {
     this.waitingFileObject = this.waitingArrayBuffer = [];
     this.fragments = new FragmentsObject();
+    this.fileStore = new ObjectListStore<File>(fileStore);
     this.logStore = new LogListStore(logStore);
     this.ws = ws;
     this.remoteId = remoteId;
@@ -95,7 +97,6 @@ export class RTC {
    * @param event A message received from the remote peer
    */
   public handleMessage(event: MessageEvent): void {
-    this.logStore.pushWithCurrentTimeStamp(`Received a message from peer ID: ${this.remoteId}`);
     const message = event.data;
     let dataIdCompleted = 'Not Found';
     if (typeof message === 'string') {
@@ -105,13 +106,8 @@ export class RTC {
       dataIdCompleted = this.handleArrayBuffer(message);
     }
     if (dataIdCompleted === 'Not Found') return;
-    this.fragments.reconstruct(dataIdCompleted);
-    // this.fragments.reconstruct();
-    // const arrayBuffer: ArrayBuffer = event.data;
-    // const blob = new Blob([arrayBuffer]);
-    // const urlCreator = window.URL || window.webkitURL;
-    // const url = urlCreator.createObjectURL(blob);
-    // console.log(blob);
+    const file: File = this.fragments.toFile(dataIdCompleted);
+    this.fileStore.push(file);
   }
   private handleFileObject(fileObject: FileObject): string {
     const arrayBuffer = this.waitingArrayBuffer.find((ab: ArrayBuffer) => {
@@ -122,7 +118,7 @@ export class RTC {
       this.waitingFileObject.push(fileObject);
       return 'Not Found';
     }
-    const isCompleted = this.fragments.add(fileObject.dataId, [fileObject, arrayBuffer]);
+    const isCompleted = this.fragments.add(fileObject.dataId, { fileObject, arrayBuffer });
     const result = isCompleted ? fileObject.dataId : 'Not Found';
     return result;
   }
@@ -134,7 +130,7 @@ export class RTC {
       this.waitingArrayBuffer.push(arrayBuffer);
       return 'Not Found';
     }
-    const isCompleted = this.fragments.add(fileObject.dataId, [fileObject, arrayBuffer]);
+    const isCompleted = this.fragments.add(fileObject.dataId, { fileObject, arrayBuffer });
     const result = isCompleted ? fileObject.dataId : 'Not Found';
     return result;
   }

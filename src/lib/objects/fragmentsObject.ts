@@ -44,11 +44,11 @@ export class FragmentsObject implements FragmentsObjectInterface {
    */
   public toFile(dataId: string): File {
     const targetArray: FragmentSet[] = this.fragments[dataId];
-    console.log(targetArray[0].fileObject.type);
     const fileName: string = targetArray[0].fileObject.name;
     const dataType: string = targetArray[0].fileObject.type;
     const arrayBuffers: ArrayBuffer[] = targetArray.length === 1 ? [targetArray[0].arrayBuffer] : targetArray.map((fragmentSet: FragmentSet) => fragmentSet.arrayBuffer);
     const merged: File = new File(arrayBuffers, fileName, { type: dataType });
+    delete this.fragments[dataId];
     return merged;
   }
 }

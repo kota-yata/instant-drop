@@ -1,5 +1,5 @@
 {
-  "name": "kota-yata",
+  "name": "instant-drop",
   "version": "0.0.1",
   "scripts": {
     "dev": "svelte-kit dev --host 0.0.0.0",

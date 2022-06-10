@@ -18,7 +18,7 @@
   $: filteredPeers = [] as Peer[];
   const unsub = peersStore.subscribe((peers) => {
     filteredPeers = peers.filter((peer) => peer.id !== $idStore);
-  })
+  });
   onDestroy(() => {
     unsub();
   });
@@ -29,7 +29,7 @@
     } else {
       logListStore.pushWithCurrentTimeStamp('File System Access API is not supported');
     }
-  })
+  });
 
   const peerOnClick = async (id: string) => {
     let rtc: RTC;
@@ -44,7 +44,7 @@
       ws.sendMessage(messageObj);
     } else {
       rtc = r.rtc;
-      logListStore.pushWithCurrentTimeStamp(`Connection with peer ID: ${id} has already been established`);
+      logListStore.pushWithCurrentTimeStamp(`Using an existing connection with ${id}`);
     }
     // I have to fragment data larger than about 250KB due to the max message size
     try {
@@ -58,19 +58,25 @@
           rtc.send(data);
         });
         console.log('sent');
-      })
-    } catch(err) {
+      });
+    } catch (err) {
       if (err.name === 'AbortError') return;
       logListStore.pushWithCurrentTimeStamp('Something went wrong while opening files');
       console.error(err);
-    };
-  }
+    }
+  };
 </script>
 
 <div class="left-peers">
   {#if filteredPeers.length > 0}
     {#each filteredPeers as peer}
-      <div class="peer" role="button" on:click="{() => { peerOnClick(peer.id) }}">
+      <div
+        class="peer"
+        role="button"
+        on:click={() => {
+          peerOnClick(peer.id);
+        }}
+      >
         <Icon iconString={peer.icon} />
         <h2>{peer.id}</h2>
       </div>

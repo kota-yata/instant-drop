@@ -105,7 +105,7 @@ export class RTC {
     } else {
       dataIdCompleted = this.handleArrayBuffer(message);
     }
-    if (dataIdCompleted === 'Not Found') return;
+    if (dataIdCompleted === 'Not Found' || !dataIdCompleted) return;
     const file: File = this.fragments.toFile(dataIdCompleted);
     this.fileStore.push(file);
   }

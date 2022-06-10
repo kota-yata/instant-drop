@@ -1,10 +1,28 @@
 <script lang="ts">
-  export let data = [
-    { name: '2020StudentData.csv', from: 'BF30', lastModified: '2022-04-07', type: 'csv' },
-    { name: '2020StudentData.csv', from: 'BF30', lastModified: '2022-04-07', type: 'csv' },
-    { name: '2020StudentData.csv', from: 'BF30', lastModified: '2022-04-07', type: 'csv' },
-    { name: '2020StudentData.csv', from: 'BF30', lastModified: '2022-04-07', type: 'csv' }
-  ];
+  import { fileStore } from '$lib/store';
+  import { onMount } from 'svelte';
+
+  const IMAGE_TYPE = ['image/jpeg', 'image/png', 'image/webp'];
+  let M_URL;
+  onMount(() => {
+    M_URL = window.URL || window.webkitURL;
+  })
+
+  let data: { name: string, url: string, isImage: boolean }[] = [];
+  let dataLengthInThisSession = 0;
+
+  fileStore.subscribe((files: File[]) => {
+    for (let i = dataLengthInThisSession; i < files.length; i++) {
+      const url = M_URL.createObjectURL(files[i]);
+      const isImage = IMAGE_TYPE.indexOf(files[i].type) !== -1;
+      data = [{
+        name: files[i].name,
+        url,
+        isImage
+      }, ...data]; // To trigger svelte reactivity
+    }
+    dataLengthInThisSession = files.length;
+  });
 </script>
 
 <div class="left-data container">
@@ -13,10 +31,14 @@
     {#if data.length > 0}
       {#each data as d}
         <div class="data" role="button">
-          <h2>{d.name}</h2>
-          <p>From : {d.from}</p>
-          <p>Last Modified : {d.lastModified}</p>
-          <p>Type : {d.type}</p>
+          <h3>{d.name}</h3>
+          <div class="data-preview">
+            {#if d.isImage}
+            <img alt={d.name} src={d.url} />
+            {:else}
+            <p>No Preview</p>
+            {/if}
+          </div>
         </div>
       {/each}
     {:else}
@@ -35,19 +57,28 @@
       width: 100%;
       height: calc(100% - 45px);
       display: flex;
-      align-items: stretch;
-      overflow-x: auto;
+      flex-wrap: wrap;
+      overflow-y: auto;
       .data {
         cursor: pointer;
-        padding: 30px;
+        padding: 20px;
+        width: 300px;
+        height: calc(250px - 40px);
         border-radius: 10px;
         background: $bg-gray-secondary;
-        margin: 0 10px;
-        & > h2 {
-          margin-bottom: 20px;
+        margin: 10px 10px;
+        & > h3 {
+          height: 40px;
         }
-        & > p {
-          font-size: 15px;
+        &-preview {
+          height: calc(100% - 40px);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          & > img {
+            max-height: 100%;
+            max-width: 100%;
+          }
         }
       }
       & > h2 {

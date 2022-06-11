@@ -18,7 +18,7 @@
   @import '../../../styles/variable.scss';
 
   .right-log {
-    height: calc(65% - #{$container-mp * 6});
+    height: calc(100% - #{$container-mp * 3});
     overflow-y: hidden;
     &-container {
       font-size: 15px;

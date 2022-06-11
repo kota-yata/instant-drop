@@ -57,12 +57,14 @@
       width: 100%;
       height: calc(100% - 45px);
       display: flex;
+      justify-content: center;
       flex-wrap: wrap;
       overflow-y: auto;
       .data {
         cursor: pointer;
         padding: 20px;
-        width: 300px;
+        width: calc(50% - 60px);
+        max-width: 250px;
         height: calc(250px - 40px);
         border-radius: 10px;
         background: $bg-gray-secondary;

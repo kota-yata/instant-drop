@@ -100,7 +100,6 @@ export class WS {
     const answerObject: string = new StringDataObject(this.localId, offerObject.from, JSON.stringify(answerSdp)).toString();
     const reply: string = new MessageObject('Answer', answerObject).toString();
     this.sendMessage(reply);
-    this.logListStore.pushWithCurrentTimeStamp('Answer sent');
   }
   private async handleMessageAnswer(messageObject: MessageObject) {
     const answerObject: StringDataObjectInterface = JSON.parse(messageObject.stringData);
@@ -122,6 +121,5 @@ export class WS {
       return;
     }
     rtcAndId.rtc.addIceCandidate(JSON.parse(stringData.offer));
-    this.logListStore.pushWithCurrentTimeStamp('New ICE candidate added');
   }
 }

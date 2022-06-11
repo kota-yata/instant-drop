@@ -1,5 +1,10 @@
+<script>
+
+import { idStore } from "$lib/store";
+
+</script>
 <div class="left-header">
-  <h1>Instant Drop</h1>
+  <h1>Instant Drop (id: {$idStore})</h1>
 </div>
 
 <style lang="scss">

@@ -47,14 +47,12 @@ export class RTC {
     this.dataChannel.onmessage = (event: MessageEvent) => { this.handleMessage(event); };
     this.peerConnection.onicecandidate = (event: RTCPeerConnectionIceEvent) => { this.elIceCandidate(event); }; // Ice Candidate update event
     this.peerConnection.onconnectionstatechange = () => { this.elConnectionStateChange(); }; // Connection state update event
-    this.logStore.pushWithCurrentTimeStamp('New RTC Instance created');
   }
   private elIceCandidate(event: RTCPeerConnectionIceEvent): void {
     if (!event.candidate) return;
     const offerObj: string = new StringDataObject(this.localId, this.remoteId, JSON.stringify(event.candidate)).toString();
     const messageObj: string = new MessageObject('IceCandidate', offerObj).toString();
     this.ws.sendMessage(messageObj);
-    this.logStore.pushWithCurrentTimeStamp('New local ICE Candidate detected');
   }
   private elConnectionStateChange(): void {
     this.logStore.pushWithCurrentTimeStamp(`Connection state changed: ${this.peerConnection.connectionState}`);
@@ -70,7 +68,6 @@ export class RTC {
       offerToReceiveVideo: false
     });
     await this.peerConnection.setLocalDescription(offer);
-    this.logStore.pushWithCurrentTimeStamp('Local SDP created');
     return offer;
   }
   /**

@@ -2,7 +2,6 @@
   import LeftData from '$lib/components/sections/left-data.svelte';
   import LeftHeader from '$lib/components/sections/left-header.svelte';
   import LeftPeers from '$lib/components/sections/left-peers.svelte';
-  import RightInfo from '$lib/components/sections/right-info.svelte';
   import RightLog from '$lib/components/sections/right-log.svelte';
   import { WS } from '$lib/ws';
   import { onMount } from 'svelte';
@@ -26,7 +25,6 @@
   </div>
   <div class="right">
     <RightLog />
-    <RightInfo />
   </div>
 </div>
 

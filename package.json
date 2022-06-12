@@ -14,7 +14,8 @@
     "format:stylelint": "stylelint --fix '**/*.{css,scss,sass}'"
   },
   "devDependencies": {
-    "@sveltejs/adapter-static": "^1.0.0-next.34",
+    "@sveltejs/adapter-static": "^1.0.0-next.16",
+    "@sveltejs/adapter-vercel": "^1.0.0-next.26",
     "@sveltejs/kit": "next",
     "@types/cookie": "^0.4.0",
     "@typescript-eslint/eslint-plugin": "^4.19.0",

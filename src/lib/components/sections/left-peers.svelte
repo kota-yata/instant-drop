@@ -5,7 +5,7 @@
   import Icon from '../icon.svelte';
   import { fileOpen, supported } from 'browser-fs-access';
   import type { WS } from '$lib/ws';
-  import { RTC } from '../../rtc';
+  import { RTC } from '$lib/rtc';
   import messageObject from '$lib/objects/messageObject';
   import offerObject from '$lib/objects/stringDataObject';
   import { fragment } from '$lib/utils/fileHandler';

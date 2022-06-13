@@ -1,4 +1,5 @@
-import { Writable, writable } from 'svelte/store';
+import { writable } from 'svelte/store';
+import type { Writable } from 'svelte/store';
 import type { Log, Peer } from './types.d';
 import { getTimestamp } from './utils/timestamp';
 

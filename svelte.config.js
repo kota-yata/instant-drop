@@ -9,7 +9,12 @@ const config = {
 
   kit: {
     // hydrate the <div id="svelte"> element in src/app.html
-    adapter: adapter({ fallback: 'index.html' }),
+    adapter: adapter({
+      pages: 'build',
+      assets: 'build',
+      fallback: 'index.html',
+      precompress: false
+    }),
     prerender: { default: false, },
   },
 };

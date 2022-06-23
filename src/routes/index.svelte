@@ -46,4 +46,16 @@
       flex-direction: column; // In order to avoid collapsing margins
     }
   }
+
+  @media screen and (max-width: 700px) {
+    .index {
+      display: block;
+      & > .left {
+        width: 100%;
+      }
+      & > .right {
+        width: 100%;
+      }
+    }
+  }
 </style>

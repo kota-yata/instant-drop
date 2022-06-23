@@ -90,6 +90,7 @@
   @import '../../../styles/variable.scss';
 
   .left-peers {
+    min-height: 100px;
     height: calc(50% - #{$container-mp});
     display: flex;
     align-items: center;

@@ -4,7 +4,7 @@ import { fileStore, idStore, LogListStore, logStore, ObjectListStore } from './s
 import type { WS } from './ws';
 import type { FileObject } from '$lib/objects/fileObject';
 import { sha256 } from '$lib/sha256';
-import { FragmentsObject } from './objects/fragmentsObject';
+import { WaitingObject } from './objects/waitingObject';
 import Base64 from './base64';
 
 /**
@@ -19,15 +19,12 @@ export class RTC {
   private ws: WS;
   private localId: string;
   private remoteId: string;
-  private fragments: FragmentsObject;
-  private waitingFileObject: FileObject[]
-  private waitingArrayBuffer: ArrayBuffer[];
+  private fragments: WaitingObject;
   /**
    * Creates a new RTCPeerConnection instance, and adds event listeners for icecandidate, connectionstatechange and datachannel.
    */
   constructor(ws: WS, remoteId: string) {
-    this.waitingFileObject = this.waitingArrayBuffer = [];
-    this.fragments = new FragmentsObject();
+    this.fragments = new WaitingObject();
     this.fileStore = new ObjectListStore<File>(fileStore);
     this.logStore = new LogListStore(logStore);
     this.ws = ws;
@@ -96,10 +93,10 @@ export class RTC {
   public handleMessage(event: MessageEvent): void {
     const message = event.data;
     let dataIdCompleted = 'Not Found';
-    if (typeof message === 'string') {
+    if (typeof message === 'string') { // FileObject
       const fileObject: FileObject = JSON.parse(message);
       dataIdCompleted = this.handleFileObject(fileObject);
-    } else {
+    } else { // Data
       dataIdCompleted = this.handleArrayBuffer(message);
     }
     if (dataIdCompleted === 'Not Found' || !dataIdCompleted) return;
@@ -107,15 +104,7 @@ export class RTC {
     this.fileStore.push(file);
   }
   private handleFileObject(fileObject: FileObject): string {
-    const arrayBuffer = this.waitingArrayBuffer.find((ab: ArrayBuffer) => {
-      const base64 = Base64.encode(ab);
-      return sha256(base64) === fileObject.dataHash;
-    });
-    if (!arrayBuffer) {
-      this.waitingFileObject.push(fileObject);
-      return 'Not Found';
-    }
-    const isCompleted = this.fragments.add(fileObject.dataId, { fileObject, arrayBuffer });
+    const isCompleted = this.fragments.addFileObject(fileObject);
     const result = isCompleted ? fileObject.dataId : 'Not Found';
     return result;
   }

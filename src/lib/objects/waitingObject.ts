@@ -15,11 +15,12 @@ export class WaitingObject implements WaitingObjectInterface {
     this.logStore = new LogListStore(logStore);
   }
   /**
-   * Adds the fileObject to fragments, scanning arrayBufferWaiting to find corresponding fragments.
+   * Adds fileObject to the fragment list, scanning arrayBufferWaiting to find corresponding fragments.
    * @param fileObject fileObject to be added
-   * @returns if all the fragments of the dataID has been received
+   * @returns File if all the fragments have been received, null otherwise
    */
-  public addFileObject(fileObject: FileObject): boolean {
+  public addFileObject(fileObject: FileObject): File {
+    this.logStore.pushWithCurrentTimeStamp(`Receiving: ${fileObject.dataId}...`);
     const fragments: ArrayBuffer[] = new Array(fileObject.hashDigests.length).fill(null);
     // Check if there is any corresponding fragment in arrayBufferWaiting
     this.arrayBufferWaiting.map((ab: ArrayBuffer) => {
@@ -30,21 +31,45 @@ export class WaitingObject implements WaitingObjectInterface {
         fragments[index] = ab;
       }
     });
-    const isCompleted = fragments.find(null) !== undefined;
     this.fragments[fileObject.dataId] = { fileObject, fragments };
-    return isCompleted;
+    const isCompleted = fragments.find(null) === undefined;
+    if (!isCompleted) return null;
+    return this.toFile(fileObject.dataId);
+  }
+  /**
+   * Adds fragment to the fragment list
+   * @param fragment fragment to be added
+   * @returns File if all the fragments have been received, null otherwise
+   */
+  public addFragment(fragment: ArrayBuffer): File {
+    const base64 = Base64.encode(fragment);
+    const digest = sha256(base64);
+    let isFound = false;
+    let dataIdCompleted = '';
+    for (const dataId in this.fragments) {
+      const index = this.fragments[dataId].fileObject.hashDigests.indexOf(digest);
+      if (index !== -1) {
+        this.fragments[dataId].fragments[index] = fragment; // if found add the ab to fragments list
+        isFound = true;
+        dataIdCompleted = this.fragments[dataId].fragments.find(null) === undefined ? dataId : '';
+        break;
+      }
+    }
+    if (!isFound) this.arrayBufferWaiting.push(fragment);
+    if (!dataIdCompleted) return null;
+    return this.toFile(dataIdCompleted);
   }
   /**
    * Convert array buffer into blob. Joins all the fragments of the ID if needed
    * @param dataId dataId to reconstruct
    */
   public toFile(dataId: string): File {
-    const targetArray: FragmentSet[] = this.fragments[dataId];
-    const fileName: string = targetArray[0].fileObject.name;
-    const dataType: string = targetArray[0].fileObject.type;
-    const arrayBuffers: ArrayBuffer[] = targetArray.length === 1 ? [targetArray[0].arrayBuffer] : targetArray.map((fragmentSet: FragmentSet) => fragmentSet.arrayBuffer);
-    const merged: File = new File(arrayBuffers, fileName, { type: dataType });
+    const target: FragmentSet = this.fragments[dataId];
+    const fileName: string = target.fileObject.name;
+    const dataType: string = target.fileObject.type;
+    const merged: File = new File(target.fragments, fileName, { type: dataType });
     delete this.fragments[dataId];
+    this.logStore.pushWithCurrentTimeStamp(`Received segments for ${target.fileObject.dataId} are successfully merged`);
     return merged;
   }
 }

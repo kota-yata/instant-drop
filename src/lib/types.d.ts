@@ -63,6 +63,7 @@ export interface WaitingObjectInterface {
     [id: string]: FragmentSet
   }
   private logStore: LogListStore
-  public addFileObject(fileObject: FileObject): boolean
+  public addFileObject(fileObject: FileObject): File
+  public addFragment(fragment: ArrayBuffer): File
   public toFile(id: string): File
 }

@@ -6,7 +6,7 @@
   let M_URL;
   onMount(() => {
     M_URL = window.URL || window.webkitURL;
-  })
+  });
 
   let data: { name: string, url: string, isImage: boolean }[] = [];
   let dataLengthInThisSession = 0;

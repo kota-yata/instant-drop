@@ -3,9 +3,7 @@ import StringDataObject from './objects/stringDataObject';
 import { fileStore, idStore, LogListStore, logStore, ObjectListStore } from './store';
 import type { WS } from './ws';
 import type { FileObject } from '$lib/objects/fileObject';
-import { sha256 } from '$lib/sha256';
 import { WaitingObject } from './objects/waitingObject';
-import Base64 from './base64';
 
 /**
  * Class for WebRTC datachannel connection
@@ -92,33 +90,14 @@ export class RTC {
    */
   public handleMessage(event: MessageEvent): void {
     const message = event.data;
-    let dataIdCompleted = 'Not Found';
+    let file: File = null;
     if (typeof message === 'string') { // FileObject
       const fileObject: FileObject = JSON.parse(message);
-      dataIdCompleted = this.handleFileObject(fileObject);
+      file = this.fragments.addFileObject(fileObject);
     } else { // Data
-      dataIdCompleted = this.handleArrayBuffer(message);
+      file = this.fragments.addFragment(message as ArrayBuffer);
     }
-    if (dataIdCompleted === 'Not Found' || !dataIdCompleted) return;
-    const file: File = this.fragments.toFile(dataIdCompleted);
-    this.fileStore.push(file);
-  }
-  private handleFileObject(fileObject: FileObject): string {
-    const isCompleted = this.fragments.addFileObject(fileObject);
-    const result = isCompleted ? fileObject.dataId : 'Not Found';
-    return result;
-  }
-  private handleArrayBuffer(arrayBuffer: ArrayBuffer): string {
-    const base64 = Base64.encode(arrayBuffer);
-    const fileObject = this.waitingFileObject.find((obj: FileObject) => obj.dataHash === sha256(base64));
-    // If the corresponding fileObject has not arrived yet, put the arrayBuffer into the waiting list
-    if (!fileObject) {
-      this.waitingArrayBuffer.push(arrayBuffer);
-      return 'Not Found';
-    }
-    const isCompleted = this.fragments.add(fileObject.dataId, { fileObject, arrayBuffer });
-    const result = isCompleted ? fileObject.dataId : 'Not Found';
-    return result;
+    if (file) this.fileStore.push(file);
   }
   public send(data: string): void;
   public send(data: Blob): void;

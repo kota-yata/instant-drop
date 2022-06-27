@@ -1,4 +1,4 @@
-import type { FileObjectInterface, FragmentOrder } from '../types';
+import type { FileObjectInterface } from '../types';
 import { sha256 } from '$lib/sha256';
 import Base64 from '$lib/base64';
 

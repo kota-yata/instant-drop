@@ -21,7 +21,7 @@ export class WaitingObject implements WaitingObjectInterface {
    * @returns File if all the fragments have been received, null otherwise
    */
   public addFileObject(fileObject: FileObject): File {
-    this.logStore.pushWithCurrentTimeStamp(`Receiving: ${fileObject.dataId}...`);
+    this.logStore.pushWithCurrentTimeStamp(`Receiving: ${fileObject.name}...`);
     const fragments: ArrayBuffer[] = new Array(fileObject.hashDigests.length).fill(null);
     // Check if there is any corresponding fragment in arrayBufferWaiting
     this.arrayBufferWaiting.map((ab: ArrayBuffer) => {
@@ -70,7 +70,7 @@ export class WaitingObject implements WaitingObjectInterface {
     const dataType: string = target.fileObject.type;
     const merged: File = new File(target.fragments, fileName, { type: dataType });
     delete this.fragments[dataId];
-    this.logStore.pushWithCurrentTimeStamp(`Received segments for ${target.fileObject.dataId} are successfully merged`);
+    this.logStore.pushWithCurrentTimeStamp(`Received segments of ${target.fileObject.name} are successfully merged`);
     return merged;
   }
 }

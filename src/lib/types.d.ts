@@ -46,24 +46,24 @@ export interface FragmentOrder {
 }
 
 export interface FileObjectInterface {
-  public name: string
   public dataId: string
+  public name: string
   public type: string
-  public dataHash: string
-  public isFragmented: boolean
-  public fragment?: FragmentOrder
+  public hashDigests: string[]
 }
 
 export interface FragmentSet {
   fileObject: FileObject
-  arrayBuffer: ArrayBuffer
+  fragments: ArrayBuffer[]
 }
 
-export interface FragmentsObjectInterface {
+export interface WaitingObjectInterface {
+  private arrayBufferWaiting: ArrayBuffer[];
   private fragments: {
-    [id: string]: FragmentSet[]
+    [id: string]: FragmentSet
   }
   private logStore: LogListStore
-  public add(to: string, data: FragmentSet): boolean
+  public addFileObject(fileObject: FileObject): File
+  public addFragment(fragment: ArrayBuffer): File
   public toFile(id: string): File
 }

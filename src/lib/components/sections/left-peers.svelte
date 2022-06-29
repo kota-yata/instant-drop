@@ -1,6 +1,6 @@
 <script lang="ts">
   import { idStore, LogListStore, logStore, peersStore } from '$lib/store';
-  import type { Peer } from '$lib/types';
+  import type { FragmentSet, Peer } from '$lib/types';
   import { onDestroy, onMount } from 'svelte';
   import Icon from '../icon.svelte';
   import { fileOpen, supported } from 'browser-fs-access';
@@ -9,7 +9,6 @@
   import messageObject from '$lib/objects/messageObject';
   import offerObject from '$lib/objects/stringDataObject';
   import { fragment } from '$lib/utils/fileHandler';
-  import type { FileObject } from '$lib/objects/fileObject';
 
   export let ws: WS;
 
@@ -52,12 +51,15 @@
         multiple: true
       });
       blobs.map(async (file: File, index) => {
-        const fragemented: [FileObject, ArrayBuffer][] = await fragment(file, `${$idStore}-${index}`);
-        fragemented.map(([fileObject, data]) => {
-          rtc.send(JSON.stringify(fileObject));
-          rtc.send(data);
+        if (file.size > 300000000) {
+          logListStore.pushWithCurrentTimeStamp(`Unable to transfer: ${file.name} exceeds 300MB`);
+        }
+        const fragemented: FragmentSet = await fragment(file, `${$idStore}-${index}`);
+        rtc.send(JSON.stringify(fragemented.fileObject));
+        fragemented.fragments.map((ab: ArrayBuffer) => {
+          rtc.send(ab);
         });
-        console.log('sent');
+        logListStore.pushWithCurrentTimeStamp(`Data sent fragmented into ${fragemented.fragments.length} chunks`);
       });
     } catch (err) {
       if (err.name === 'AbortError') return;

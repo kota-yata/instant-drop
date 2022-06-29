@@ -7,7 +7,7 @@ export const fragment = async (file: File, dataId: string): Promise<FragmentSet>
   if (file.size <= THRESHOLD) {
     const arrayBuffer: ArrayBuffer = await file.arrayBuffer();
     fragments.push(arrayBuffer);
-    const fileObject: FileObject = new FileObject(file.name, file.type, fragments);
+    const fileObject: FileObject = new FileObject(dataId, file.name, file.type, fragments);
     return { fileObject, fragments };
   }
   // Fragment process
@@ -19,6 +19,6 @@ export const fragment = async (file: File, dataId: string): Promise<FragmentSet>
     const arrayBuffer: ArrayBuffer = await fragmentBlob.arrayBuffer();
     fragments.push(arrayBuffer);
   }
-  const fileObject = new FileObject(file.name, file.type, fragments);
+  const fileObject = new FileObject(dataId, file.name, file.type, fragments);
   return { fileObject, fragments };
 };

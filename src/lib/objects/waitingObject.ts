@@ -11,6 +11,7 @@ export class WaitingObject implements WaitingObjectInterface {
   }
   private logStore: LogListStore;
   constructor() {
+    this.arrayBufferWaiting = [];
     this.fragments = {};
     this.logStore = new LogListStore(logStore);
   }
@@ -32,7 +33,7 @@ export class WaitingObject implements WaitingObjectInterface {
       }
     });
     this.fragments[fileObject.dataId] = { fileObject, fragments };
-    const isCompleted = fragments.find(null) === undefined;
+    const isCompleted = fragments.indexOf(null) === -1;
     if (!isCompleted) return null;
     return this.toFile(fileObject.dataId);
   }
@@ -51,7 +52,7 @@ export class WaitingObject implements WaitingObjectInterface {
       if (index !== -1) {
         this.fragments[dataId].fragments[index] = fragment; // if found add the ab to fragments list
         isFound = true;
-        dataIdCompleted = this.fragments[dataId].fragments.find(null) === undefined ? dataId : '';
+        dataIdCompleted = this.fragments[dataId].fragments.indexOf(null) === -1 ? dataId : '';
         break;
       }
     }

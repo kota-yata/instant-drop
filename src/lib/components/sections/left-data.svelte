@@ -1,6 +1,9 @@
 <script lang="ts">
-  import { fileStore } from '$lib/store';
+  import { fileStore, LogListStore, logStore } from '$lib/store';
+  import { fileSave } from 'browser-fs-access';
   import { onMount } from 'svelte';
+
+  const logListStore = new LogListStore(logStore);
 
   const IMAGE_TYPE = ['image/jpeg', 'image/png', 'image/webp'];
   let M_URL;
@@ -8,21 +11,35 @@
     M_URL = window.URL || window.webkitURL;
   });
 
-  let data: { name: string, url: string, isImage: boolean }[] = [];
+  let data: { index: number; name: string; url: string; isImage: boolean }[] = [];
   let dataLengthInThisSession = 0;
 
   fileStore.subscribe((files: File[]) => {
     for (let i = dataLengthInThisSession; i < files.length; i++) {
       const url = M_URL.createObjectURL(files[i]);
       const isImage = IMAGE_TYPE.indexOf(files[i].type) !== -1;
-      data = [{
-        name: files[i].name,
-        url,
-        isImage
-      }, ...data]; // To trigger svelte reactivity
+      data = [
+        {
+          index: i,
+          name: files[i].name,
+          url,
+          isImage
+        },
+        ...data
+      ]; // To trigger svelte reactivity
     }
     dataLengthInThisSession = files.length;
   });
+
+  const dataOnClick = async (index: number): Promise<void> => {
+    const file: File = $fileStore[index];
+    fileSave(file, {
+      fileName: file.name
+    }).catch((err) => {
+      logListStore.pushWithCurrentTimeStamp(`Failed to download ${file.name}`);
+      console.log(err);
+    });
+  };
 </script>
 
 <div class="left-data container">
@@ -30,13 +47,19 @@
   <div class="left-data-container">
     {#if data.length > 0}
       {#each data as d}
-        <div class="data" role="button">
+        <div
+          class="data"
+          role="button"
+          on:click={() => {
+            dataOnClick(d.index);
+          }}
+        >
           <h3>{d.name}</h3>
           <div class="data-preview">
             {#if d.isImage}
-            <img alt={d.name} src={d.url} />
+              <img alt={d.name} src={d.url} />
             {:else}
-            <p>No Preview</p>
+              <p>No Preview</p>
             {/if}
           </div>
         </div>
@@ -65,7 +88,7 @@
         padding: 20px;
         width: calc(50% - 60px);
         max-width: 250px;
-        height: calc(250px - 40px);
+        height: calc(100% - 60px);
         border-radius: 10px;
         background: $bg-gray-secondary;
         margin: 10px 10px;

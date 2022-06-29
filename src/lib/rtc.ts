@@ -17,12 +17,12 @@ export class RTC {
   private ws: WS;
   private localId: string;
   private remoteId: string;
-  private fragments: WaitingObject;
+  private waitingObject: WaitingObject;
   /**
    * Creates a new RTCPeerConnection instance, and adds event listeners for icecandidate, connectionstatechange and datachannel.
    */
   constructor(ws: WS, remoteId: string) {
-    this.fragments = new WaitingObject();
+    this.waitingObject = new WaitingObject();
     this.fileStore = new ObjectListStore<File>(fileStore);
     this.logStore = new LogListStore(logStore);
     this.ws = ws;
@@ -93,9 +93,9 @@ export class RTC {
     let file: File = null;
     if (typeof message === 'string') { // FileObject
       const fileObject: FileObject = JSON.parse(message);
-      file = this.fragments.addFileObject(fileObject);
+      file = this.waitingObject.addFileObject(fileObject);
     } else { // Data
-      file = this.fragments.addFragment(message as ArrayBuffer);
+      file = this.waitingObject.addFragment(message as ArrayBuffer);
     }
     if (file) this.fileStore.push(file);
   }

@@ -1,9 +1,8 @@
 <script lang="ts">
   import { idStore, LogListStore, logStore, peersStore } from '$lib/store';
   import type { FragmentSet, Peer } from '$lib/types';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy } from 'svelte';
   import Icon from '../icon.svelte';
-  import { fileOpen, supported } from 'browser-fs-access';
   import type { WS } from '$lib/ws';
   import { RTC } from '$lib/rtc';
   import messageObject from '$lib/objects/messageObject';
@@ -22,13 +21,23 @@
     unsub();
   });
 
-  onMount(() => {
-    if (supported) {
-      logListStore.pushWithCurrentTimeStamp('File System Access API is supported');
-    } else {
-      logListStore.pushWithCurrentTimeStamp('File System Access API is not supported');
+  const sendFile = async (fileUploadDOM: HTMLInputElement, rtc: RTC) => {
+    const blobs = fileUploadDOM.files;
+    // I have to fragment data larger than about 250KB due to the max message size
+    for (let i = 0; i < blobs.length; i++) {
+      const file = blobs[i];
+      console.log(file);
+      if (file.size > 300000000) {
+        logListStore.pushWithCurrentTimeStamp(`Unable to transfer: ${file.name} exceeds 300MB`);
+      }
+      const fragemented: FragmentSet = await fragment(file, `${$idStore}-${i}`);
+      rtc.send(JSON.stringify(fragemented.fileObject));
+      fragemented.fragments.map((ab: ArrayBuffer) => {
+        rtc.send(ab);
+      });
+      logListStore.pushWithCurrentTimeStamp(`Data sent fragmented into ${fragemented.fragments.length} chunks`);
     }
-  });
+  };
 
   const peerOnClick = async (id: string) => {
     let rtc: RTC;
@@ -45,31 +54,16 @@
       rtc = r.rtc;
       logListStore.pushWithCurrentTimeStamp(`Using an existing connection with ${id}`);
     }
-    // I have to fragment data larger than about 250KB due to the max message size
-    try {
-      const blobs: File[] = await fileOpen({
-        multiple: true
-      });
-      blobs.map(async (file: File, index) => {
-        if (file.size > 300000000) {
-          logListStore.pushWithCurrentTimeStamp(`Unable to transfer: ${file.name} exceeds 300MB`);
-        }
-        const fragemented: FragmentSet = await fragment(file, `${$idStore}-${index}`);
-        rtc.send(JSON.stringify(fragemented.fileObject));
-        fragemented.fragments.map((ab: ArrayBuffer) => {
-          rtc.send(ab);
-        });
-        logListStore.pushWithCurrentTimeStamp(`Data sent fragmented into ${fragemented.fragments.length} chunks`);
-      });
-    } catch (err) {
-      if (err.name === 'AbortError') return;
-      logListStore.pushWithCurrentTimeStamp('Something went wrong while opening files');
-      console.error(err);
-    }
+    const fileUploadDOM =  document.getElementById('fileUpload');
+    fileUploadDOM.click();
+    fileUploadDOM.onchange = async () => {
+      await sendFile(fileUploadDOM as HTMLInputElement, rtc);
+    };
   };
 </script>
 
 <div class="left-peers">
+  <input type="file" id="fileUpload" style="display:none" multiple>
   {#if filteredPeers.length > 0}
     {#each filteredPeers as peer}
       <div

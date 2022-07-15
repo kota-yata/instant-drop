@@ -94,6 +94,9 @@
         margin: 10px 10px;
         & > h3 {
           height: 40px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
         &-preview {
           height: calc(100% - 40px);

@@ -115,6 +115,7 @@ export class WS {
   }
   private handleMessageIceCandidate(messageObject: MessageObject) {
     const stringData: StringDataObject = JSON.parse(messageObject.stringData);
+    console.log(stringData.offer);
     const rtcAndId = this.rtcInstanceList.find((r) => r.id === stringData.from);
     if (!rtcAndId) {
       this.logListStore.pushWithCurrentTimeStamp('Corresponding RTC instance to the remote peer was not found');

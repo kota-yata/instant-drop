@@ -54,7 +54,7 @@
       rtc = r.rtc;
       logListStore.pushWithCurrentTimeStamp(`Using an existing connection with ${id}`);
     }
-    const fileUploadDOM =  document.getElementById('fileUpload');
+    const fileUploadDOM = document.getElementById('fileUpload');
     fileUploadDOM.click();
     fileUploadDOM.onchange = async () => {
       await sendFile(fileUploadDOM as HTMLInputElement, rtc);
@@ -63,7 +63,7 @@
 </script>
 
 <div class="left-peers">
-  <input type="file" id="fileUpload" style="display:none" multiple>
+  <input type="file" id="fileUpload" style="display:none" multiple />
   {#if filteredPeers.length > 0}
     {#each filteredPeers as peer}
       <div

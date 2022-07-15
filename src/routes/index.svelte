@@ -13,10 +13,6 @@
   });
 </script>
 
-<svelte:head>
-  <title>Home | Instant Drop</title>
-</svelte:head>
-
 <div class="index">
   <div class="left">
     <LeftHeader />

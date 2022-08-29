@@ -9,7 +9,7 @@ import { WaitingObject } from './objects/waitingObject';
  * Class for WebRTC datachannel connection
  */
 export class RTC {
-  private readonly CONFIG: RTCConfiguration = { 'iceServers': [{ 'urls': 'stun:stun.1.google.com:19302' }] };
+  private readonly CONFIG: RTCConfiguration = { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] };
   private peerConnection: RTCPeerConnection;
   private dataChannel: RTCDataChannel;
   private logStore: LogListStore;

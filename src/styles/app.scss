@@ -52,6 +52,10 @@ button {
   font-family: inherit;
   border: none;
 }
+
+button {
+  cursor: pointer;
+}
   
 .container {
   background: $bg-gray-primary;

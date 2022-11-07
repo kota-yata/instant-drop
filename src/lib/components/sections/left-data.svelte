@@ -47,14 +47,20 @@
   <div class="left-data-container">
     {#if data.length > 0}
       {#each data as d}
-        <div
-          class="data"
-          role="button"
-          on:click={() => {
-            dataOnClick(d.index);
-          }}
-        >
+        <div class="data">
           <h3>{d.name}</h3>
+          <div class="data-buttons">
+            <button class="data-buttons-button"
+              on:click={() => {
+                dataOnClick(d.index);
+              }}
+            >
+              <img alt="download icon" src="/download.svg" />
+            </button>
+            <button class="data-buttons-button">
+              <img alt="s3 icon" src="/s3.svg" />
+            </button>
+          </div>
           <div class="data-preview">
             {#if d.isImage}
               <img alt={d.name} src={d.url} />
@@ -84,7 +90,6 @@
       flex-wrap: wrap;
       overflow-y: auto;
       .data {
-        cursor: pointer;
         padding: 20px;
         width: calc(50% - 60px);
         max-width: 250px;
@@ -93,13 +98,26 @@
         background: $bg-gray-secondary;
         margin: 10px 10px;
         & > h3 {
-          height: 40px;
+          height: 35px;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+
+        }
+        &-buttons {
+          display: flex;
+          padding-bottom: 10px;
+          justify-content: space-evenly;
+          &-button {
+            background: $letter-gray;
+            text-align: center;
+            align-items: center;
+            padding: 5px 10px;
+            border-radius: 5px;
+          }
         }
         &-preview {
-          height: calc(100% - 40px);
+          height: calc(100% - 74px);
           display: flex;
           justify-content: center;
           align-items: center;

@@ -1,8 +1,9 @@
-import MessageObject from './objects/messageObject';
-import StringDataObject from './objects/stringDataObject';
+import MyMessageObject from './objects/messageObject';
+import MyStringDataObject from './objects/stringDataObject';
 import { RTC } from './rtc';
 import { logStore, idStore, LogListStore, peersStore } from './store';
-import type { IndividualRTC, MessageObjectInterface, StringDataObjectInterface } from './types';
+import type { IndividualRTC } from './types';
+import * as ProtoWS from './proto/ws';
 
 export class WS {
   private ws: WebSocket;
@@ -16,7 +17,6 @@ export class WS {
       this.localId = id;
     });
     try {
-      // this.ws = new WebSocket('wss://wsjava.herokuapp.com/ws');
       this.ws = new WebSocket('wss://signaling.drop.kota-yata.com/ws');
       this.logListStore.pushWithCurrentTimeStamp('Connecting to the signaling server...');
     } catch (err) {
@@ -38,13 +38,14 @@ export class WS {
    * Sends message if WebSocket is open, otherwise waits for 5s and recursively tries to send again
    * @param txt string data you want to send
    */
-  public sendMessage(txt: string): void {
+  public sendMessage(mso: ProtoWS.MessageObject): void {
+    const bin = ProtoWS.encodeMessageObject(mso);
     if (this.isOpen) {
-      this.ws.send(txt);
+      this.ws.send(bin);
       return;
     };
     setTimeout(() => {
-      this.sendMessage(txt);
+      this.sendMessage(mso);
     }, 5000);
   }
   /**
@@ -52,7 +53,7 @@ export class WS {
    * @param e MessageEvent from WebSocket.onmessage
    */
   private async handleMessage(e: MessageEvent): Promise<void> {
-    const messageObject: MessageObjectInterface = JSON.parse(e.data);
+    const messageObject = ProtoWS.decodeMessageObject(e.data);
     this.logListStore.push({
       log: messageObject.log,
       timeStamp: messageObject.timeStamp
@@ -77,18 +78,18 @@ export class WS {
       this.logListStore.pushWithCurrentTimeStamp('Unknown message detected');
     }
   }
-  private handleMessageLocalId(messageObject: MessageObject) {
+  private handleMessageLocalId(messageObject: ProtoWS.MessageObject) {
     idStore.set(messageObject.stringData);
   }
-  private handleMessagePeers(messageObject: MessageObject) {
-    const peers = messageObject.listData.split(',').map((peerId) => ({
+  private handleMessagePeers(messageObject: ProtoWS.MessageObject) {
+    const peers = messageObject.listData.map((peerId) => ({
       id: peerId,
-      icon: '😀'
+      icon: '🤨'
     }));
     peersStore.set(peers);
   }
-  private async handleMessageOffer(messageObject: MessageObject) {
-    const offerObject: StringDataObjectInterface = JSON.parse(messageObject.stringData);
+  private async handleMessageOffer(messageObject: ProtoWS.MessageObject) {
+    const offerObject: ProtoWS.StringDataObject = messageObject.stringDataObject;
     const r = this.rtcInstanceList.find((r) => r.id === offerObject.from);
     if (r) {
       this.logListStore.pushWithCurrentTimeStamp(`The connection with ${offerObject.from} has already been established`);
@@ -98,12 +99,12 @@ export class WS {
     this.rtcInstanceList.push({ id: offerObject.from, rtc });
     const offerSdp: RTCSessionDescriptionInit = JSON.parse(offerObject.offer);
     const answerSdp: RTCSessionDescriptionInit = await rtc.createAnswer(offerSdp);
-    const answerObject: string = new StringDataObject(this.localId, offerObject.from, JSON.stringify(answerSdp)).toString();
-    const reply: string = new MessageObject('Answer', answerObject).toString();
+    const answerObject: ProtoWS.StringDataObject = new MyStringDataObject(this.localId, offerObject.from, JSON.stringify(answerSdp));
+    const reply: ProtoWS.MessageObject = new MyMessageObject(ProtoWS.DataType.Answer, answerObject);
     this.sendMessage(reply);
   }
-  private async handleMessageAnswer(messageObject: MessageObject) {
-    const answerObject: StringDataObjectInterface = JSON.parse(messageObject.stringData);
+  private async handleMessageAnswer(messageObject: ProtoWS.MessageObject) {
+    const answerObject: ProtoWS.StringDataObject = messageObject.stringDataObject;
     const answerSdp = JSON.parse(answerObject.offer);
     const r = this.rtcInstanceList.find((r) => r.id === answerObject.from);
     if (!r) {
@@ -114,9 +115,8 @@ export class WS {
     await r.rtc.handleAnswer(answerSdp);
     this.logListStore.pushWithCurrentTimeStamp(`P2P connection with peer ID: ${answerObject.from} established`);
   }
-  private handleMessageIceCandidate(messageObject: MessageObject) {
-    const stringData: StringDataObject = JSON.parse(messageObject.stringData);
-    console.log(stringData.offer);
+  private handleMessageIceCandidate(messageObject: ProtoWS.MessageObject) {
+    const stringData: ProtoWS.StringDataObject = messageObject.stringDataObject;
     const rtcAndId = this.rtcInstanceList.find((r) => r.id === stringData.from);
     if (!rtcAndId) {
       this.logListStore.pushWithCurrentTimeStamp('Corresponding RTC instance to the remote peer was not found');

@@ -12,8 +12,7 @@
     "format:eslint": "eslint --fix",
     "format:prettier": "prettier --write --svelte-sort-order scripts-markup-styles 'src/**/*.svelte'",
     "format:stylelint": "stylelint --fix '**/*.{css,scss,sass}'",
-    "genproto": "pbjs src/lib/proto/ws.proto --ts src/lib/proto/ws.ts",
-    "genproto:type": "pbts convert -i src/lib/proto/ws.proto  -o src/lib/proto/ws.d.ts"
+    "genproto": "pbjs src/lib/proto/ws.proto --ts src/lib/proto/ws.ts"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^1.0.0-next.34",

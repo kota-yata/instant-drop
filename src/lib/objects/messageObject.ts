@@ -12,7 +12,7 @@ export default class MyMessageObject implements MessageObject {
     this.dataType = dataType;
     if (dataType === DataType.Peers) {
       this.listData = data as string[];
-    } else if (dataType === DataType.Answer || dataType === DataType.Offer) {
+    } else if (dataType === DataType.Answer || dataType === DataType.Offer || dataType === DataType.IceCandidate) {
       this.stringDataObject = data as StringDataObject;
     } else {
       this.stringData = data as string;

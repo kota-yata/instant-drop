@@ -1,4 +1,5 @@
 export const enum DataType {
+  Default = "Default",
   LocalId = "LocalId",
   Peers = "Peers",
   Offer = "Offer",
@@ -8,21 +9,23 @@ export const enum DataType {
 }
 
 export const encodeDataType: { [key: string]: number } = {
-  LocalId: 0,
-  Peers: 1,
-  Offer: 2,
-  Answer: 3,
-  IceCandidate: 4,
-  Error: 5,
+  Default: 0,
+  LocalId: 1,
+  Peers: 2,
+  Offer: 3,
+  Answer: 4,
+  IceCandidate: 5,
+  Error: 6,
 };
 
 export const decodeDataType: { [key: number]: DataType } = {
-  0: DataType.LocalId,
-  1: DataType.Peers,
-  2: DataType.Offer,
-  3: DataType.Answer,
-  4: DataType.IceCandidate,
-  5: DataType.Error,
+  0: DataType.Default,
+  1: DataType.LocalId,
+  2: DataType.Peers,
+  3: DataType.Offer,
+  4: DataType.Answer,
+  5: DataType.IceCandidate,
+  6: DataType.Error,
 };
 
 export interface MessageObject {
@@ -57,10 +60,10 @@ function _encodeMessageObject(message: MessageObject, bb: ByteBuffer): void {
     }
   }
 
-  // optional StringDataObject stringDataObject = 4;
+  // optional StringDataObject stringDataObject = 3;
   let $stringDataObject = message.stringDataObject;
   if ($stringDataObject !== undefined) {
-    writeVarint32(bb, 34);
+    writeVarint32(bb, 26);
     let nested = popByteBuffer();
     _encodeStringDataObject($stringDataObject, nested);
     writeVarint32(bb, nested.limit);
@@ -68,24 +71,24 @@ function _encodeMessageObject(message: MessageObject, bb: ByteBuffer): void {
     pushByteBuffer(nested);
   }
 
-  // optional string stringData = 5;
+  // optional string stringData = 4;
   let $stringData = message.stringData;
   if ($stringData !== undefined) {
-    writeVarint32(bb, 42);
+    writeVarint32(bb, 34);
     writeString(bb, $stringData);
   }
 
-  // optional string log = 6;
+  // optional string log = 5;
   let $log = message.log;
   if ($log !== undefined) {
-    writeVarint32(bb, 50);
+    writeVarint32(bb, 42);
     writeString(bb, $log);
   }
 
-  // optional string timeStamp = 7;
+  // optional string timeStamp = 6;
   let $timeStamp = message.timeStamp;
   if ($timeStamp !== undefined) {
-    writeVarint32(bb, 58);
+    writeVarint32(bb, 50);
     writeString(bb, $timeStamp);
   }
 }
@@ -117,28 +120,28 @@ function _decodeMessageObject(bb: ByteBuffer): MessageObject {
         break;
       }
 
-      // optional StringDataObject stringDataObject = 4;
-      case 4: {
+      // optional StringDataObject stringDataObject = 3;
+      case 3: {
         let limit = pushTemporaryLength(bb);
         message.stringDataObject = _decodeStringDataObject(bb);
         bb.limit = limit;
         break;
       }
 
-      // optional string stringData = 5;
-      case 5: {
+      // optional string stringData = 4;
+      case 4: {
         message.stringData = readString(bb, readVarint32(bb));
         break;
       }
 
-      // optional string log = 6;
-      case 6: {
+      // optional string log = 5;
+      case 5: {
         message.log = readString(bb, readVarint32(bb));
         break;
       }
 
-      // optional string timeStamp = 7;
-      case 7: {
+      // optional string timeStamp = 6;
+      case 6: {
         message.timeStamp = readString(bb, readVarint32(bb));
         break;
       }

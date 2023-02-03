@@ -17,7 +17,8 @@ export class WS {
       this.localId = id;
     });
     try {
-      this.ws = new WebSocket('wss://signaling.drop.kota-yata.com/ws');
+      // this.ws = new WebSocket('wss://signaling.drop.kota-yata.com/ws');
+      this.ws = new WebSocket('ws://localhost:8080/ws');
       this.logListStore.pushWithCurrentTimeStamp('Connecting to the signaling server...');
     } catch (err) {
       this.logListStore.pushWithCurrentTimeStamp('Failed to connect to the signaling server');
@@ -28,9 +29,10 @@ export class WS {
     };
     this.ws.onopen = () => {
       this.isOpen = true;
+      this.ws.binaryType = 'arraybuffer';
     };
     // Intentionally make Immediately Invoked Function Expression (IIFE) as this onmessage event passes WebSocket object as "this"
-    this.ws.onmessage = (event: MessageEvent) => {
+    this.ws.onmessage = (event: MessageEvent<ArrayBuffer>) => {
       this.handleMessage(event);
     };
   }
@@ -52,26 +54,26 @@ export class WS {
    * handles the received message based off the data type
    * @param e MessageEvent from WebSocket.onmessage
    */
-  private async handleMessage(e: MessageEvent): Promise<void> {
-    const messageObject = ProtoWS.decodeMessageObject(e.data);
+  private async handleMessage(e: MessageEvent<ArrayBuffer>): Promise<void> {
+    const messageObject = ProtoWS.decodeMessageObject(new Uint8Array(e.data));
     this.logListStore.push({
       log: messageObject.log,
       timeStamp: messageObject.timeStamp
     });
     switch (messageObject.dataType) {
-    case 'LocalId':
+    case ProtoWS.DataType.LocalId:
       this.handleMessageLocalId(messageObject);
       break;
-    case 'Peers':
+    case ProtoWS.DataType.Peers:
       this.handleMessagePeers(messageObject);
       break;
-    case 'Offer':
+    case ProtoWS.DataType.Offer:
       await this.handleMessageOffer(messageObject);
       break;
-    case 'Answer':
+    case ProtoWS.DataType.Answer:
       await this.handleMessageAnswer(messageObject);
       break;
-    case 'IceCandidate':
+    case ProtoWS.DataType.IceCandidate:
       this.handleMessageIceCandidate(messageObject);
       break;
     default:
@@ -105,10 +107,10 @@ export class WS {
   }
   private async handleMessageAnswer(messageObject: ProtoWS.MessageObject) {
     const answerObject: ProtoWS.StringDataObject = messageObject.stringDataObject;
-    const answerSdp = JSON.parse(answerObject.offer);
+    const answerSdp: RTCSessionDescriptionInit = JSON.parse(answerObject.offer);
     const r = this.rtcInstanceList.find((r) => r.id === answerObject.from);
     if (!r) {
-      const errorMessage = 'The corresponding RTC instance to the ID was not found';
+      const errorMessage = 'Corresponding RTC instance to the ID was not found';
       this.logListStore.pushWithCurrentTimeStamp(errorMessage);
       throw new Error(errorMessage);
     }

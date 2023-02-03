@@ -1,9 +1,10 @@
-import MessageObject from './objects/messageObject';
-import StringDataObject from './objects/stringDataObject';
 import { fileStore, idStore, LogListStore, logStore, ObjectListStore } from './store';
 import type { WS } from './ws';
 import type { FileObject } from '$lib/objects/fileObject';
 import { WaitingObject } from './objects/waitingObject';
+import * as ProtoWS from './proto/ws';
+import MyStringDataObject from './objects/stringDataObject';
+import MyMessageObject from './objects/messageObject';
 
 /**
  * Class for WebRTC datachannel connection
@@ -79,8 +80,8 @@ export class RTC {
   }
   private elIceCandidate(event: RTCPeerConnectionIceEvent): void {
     if (!event.candidate) return;
-    const offerObj: string = new StringDataObject(this.localId, this.remoteId, JSON.stringify(event.candidate)).toString();
-    const messageObj: string = new MessageObject('IceCandidate', offerObj).toString();
+    const offerObj: ProtoWS.StringDataObject = new MyStringDataObject(this.localId, this.remoteId, JSON.stringify(event.candidate));
+    const messageObj: ProtoWS.MessageObject = new MyMessageObject(ProtoWS.DataType.IceCandidate, offerObj);
     this.ws.sendMessage(messageObj);
   }
   private elConnectionStateChange(): void {

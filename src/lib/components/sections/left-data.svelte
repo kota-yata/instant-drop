@@ -50,7 +50,8 @@
         <div class="data">
           <h3>{d.name}</h3>
           <div class="data-buttons">
-            <button class="data-buttons-button"
+            <button
+              class="data-buttons-button"
               on:click={() => {
                 dataOnClick(d.index);
               }}
@@ -102,7 +103,6 @@
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-
         }
         &-buttons {
           display: flex;

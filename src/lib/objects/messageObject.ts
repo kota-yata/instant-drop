@@ -1,17 +1,21 @@
-import type { dataType, MessageObjectInterface } from '../types';
+// import type { dataType, MessageObjectInterface } from '../types';
+import { type MessageObject, DataType, type StringDataObject } from '$lib/proto/ws';
 
-export default class MessageObject implements MessageObjectInterface {
-  public dataType: dataType;
+export default class MyMessageObject implements MessageObject {
+  public dataType: DataType;
+  public stringDataObject?: StringDataObject;
+  public listData?: string[];
   public stringData?: string;
-  public listData?: string; // comma as a deliminator
   public log = '';
   public timeStamp = '';
-  constructor(dataType: dataType, data: string, log?: string, timeStamp?: string) {
+  constructor(dataType: DataType, data: StringDataObject | string | string[], log?: string, timeStamp?: string) {
     this.dataType = dataType;
-    if (dataType === 'Peers') {
-      this.listData = data;
+    if (dataType === DataType.Peers) {
+      this.listData = data as string[];
+    } else if (dataType === DataType.Answer || dataType === DataType.Offer || dataType === DataType.IceCandidate) {
+      this.stringDataObject = data as StringDataObject;
     } else {
-      this.stringData = data;
+      this.stringData = data as string;
     }
     if (this.log && this.timeStamp) {
       this.log = log;

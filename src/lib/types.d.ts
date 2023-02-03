@@ -58,7 +58,7 @@ export interface FragmentSet {
 }
 
 export interface WaitingObjectInterface {
-  private arrayBufferWaiting: ArrayBuffer[];
+  private arrayBufferWaiting: ArrayBuffer[]
   private fragments: {
     [id: string]: FragmentSet
   }

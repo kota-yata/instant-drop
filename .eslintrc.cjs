@@ -52,7 +52,6 @@ module.exports = {
     'no-with': 'error',
     yoda: ['error', 'never'],
     'no-undef-init': 'error',
-    'no-use-before-define': 'error',
     'array-bracket-newline': ['warn', 'consistent'],
     'array-bracket-spacing': ['error', 'never'],
     'block-spacing': ['error', 'always'],

@@ -5,9 +5,10 @@
   import Icon from '../icon.svelte';
   import type { WS } from '$lib/ws';
   import { RTC } from '$lib/rtc';
-  import messageObject from '$lib/objects/messageObject';
-  import offerObject from '$lib/objects/stringDataObject';
+  import MyMessageObject from '$lib/objects/messageObject';
+  import MyStringDataObject from '$lib/objects/stringDataObject';
   import { fragment } from '$lib/utils/fileHandler';
+  import { DataType } from '$lib/proto/ws';
 
   export let ws: WS;
 
@@ -47,8 +48,8 @@
       rtc = new RTC(ws, id);
       ws.rtcInstanceList.push({ id, rtc });
       const sdp = await rtc.createOffer();
-      const offerObj = new offerObject($idStore, id, JSON.stringify(sdp)).toString();
-      const messageObj = new messageObject('Offer', offerObj).toString();
+      const offerObj = new MyStringDataObject($idStore, id, JSON.stringify(sdp));
+      const messageObj = new MyMessageObject(DataType.Offer, offerObj);
       ws.sendMessage(messageObj);
     } else {
       rtc = r.rtc;

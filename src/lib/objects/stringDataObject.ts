@@ -1,6 +1,6 @@
-import type { StringDataObjectInterface } from '../types';
+import type { StringDataObject } from '$lib/proto/ws';
 
-export default class StringDataObject implements StringDataObjectInterface {
+export default class MyStringDataObject implements StringDataObject {
   public from: string;
   public to: string;
   public offer: string;

@@ -11,7 +11,8 @@
     "format": "concurrently \"npm run format:*\"",
     "format:eslint": "eslint --fix",
     "format:prettier": "prettier --write --svelte-sort-order scripts-markup-styles 'src/**/*.svelte'",
-    "format:stylelint": "stylelint --fix '**/*.{css,scss,sass}'"
+    "format:stylelint": "stylelint --fix '**/*.{css,scss,sass}'",
+    "genproto": "pbjs src/lib/proto/ws.proto --ts src/lib/proto/ws.ts"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^1.0.0-next.34",
@@ -23,6 +24,7 @@
     "eslint": "^7.22.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-svelte3": "^3.2.0",
+    "pbjs": "^0.0.14",
     "prettier": "~2.2.1",
     "prettier-plugin-svelte": "^2.2.0",
     "sass": "^1.36.0",
@@ -41,6 +43,7 @@
     "@fontsource/fira-mono": "^4.2.2",
     "@lukeed/uuid": "^2.0.0",
     "browser-fs-access": "^0.31.0",
-    "cookie": "^0.4.1"
+    "cookie": "^0.4.1",
+    "protobufjs": "^7.2.0"
   }
 }

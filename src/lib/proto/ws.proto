@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package ws;
+
+enum DataType {
+  Default = 0;
+  LocalId = 1;
+  Peers = 2;
+  Offer = 3;
+  Answer = 4;
+  IceCandidate = 5;
+  Error = 6;
+}
+
+message MessageObject {
+  DataType dataType = 1;
+  repeated string listData = 2;
+  StringDataObject stringDataObject = 3;
+  string stringData = 4;
+  string log = 5;
+  string timeStamp = 6;
+}
+
+message StringDataObject {
+  string from = 1;
+  string to = 2;
+  string offer = 3;
+}

@@ -67,6 +67,7 @@ export class RTC {
     });
     this.peerConnection = new RTCPeerConnection(this.CONFIG);
     this.dataChannel = this.peerConnection.createDataChannel('File Transfer', {
+      ordered: false,
       negotiated: true,
       id: 0
     });

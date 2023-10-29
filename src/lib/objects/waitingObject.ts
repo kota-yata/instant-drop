@@ -6,13 +6,13 @@ import type { FileObject } from './fileObject';
 
 export class WaitingObject implements WaitingObjectInterface {
   private arrayBufferWaiting: ArrayBuffer[];
-  private fragments: {
+  private arrived: {
     [id: string]: FragmentSet
   }
   private logStore: LogListStore;
   constructor() {
     this.arrayBufferWaiting = [];
-    this.fragments = {};
+    this.arrived = {};
     this.logStore = new LogListStore(logStore);
   }
   /**
@@ -32,7 +32,7 @@ export class WaitingObject implements WaitingObjectInterface {
         fragments[index] = ab;
       }
     });
-    this.fragments[fileObject.dataId] = { fileObject, fragments };
+    this.arrived[fileObject.dataId] = { fileObject, fragments };
     const isCompleted = fragments.indexOf(null) === -1;
     if (!isCompleted) return null;
     return this.toFile(fileObject.dataId);
@@ -47,12 +47,12 @@ export class WaitingObject implements WaitingObjectInterface {
     const digest = sha256(base64);
     let isFound = false;
     let dataIdCompleted = '';
-    for (const dataId in this.fragments) {
-      const index = this.fragments[dataId].fileObject.hashDigests.indexOf(digest);
+    for (const dataId in this.arrived) {
+      const index = this.arrived[dataId].fileObject.hashDigests.indexOf(digest);
       if (index !== -1) {
-        this.fragments[dataId].fragments[index] = fragment; // if found add the ab to fragments list
+        this.arrived[dataId].fragments[index] = fragment; // if found add the ab to fragments list
         isFound = true;
-        dataIdCompleted = this.fragments[dataId].fragments.indexOf(null) === -1 ? dataId : '';
+        dataIdCompleted = this.arrived[dataId].fragments.indexOf(null) === -1 ? dataId : '';
         break;
       }
     }
@@ -65,11 +65,11 @@ export class WaitingObject implements WaitingObjectInterface {
    * @param dataId dataId to reconstruct
    */
   public toFile(dataId: string): File {
-    const target: FragmentSet = this.fragments[dataId];
+    const target: FragmentSet = this.arrived[dataId];
     const fileName: string = target.fileObject.name;
     const dataType: string = target.fileObject.type;
     const merged: File = new File(target.fragments, fileName, { type: dataType });
-    delete this.fragments[dataId];
+    delete this.arrived[dataId];
     this.logStore.pushWithCurrentTimeStamp(`Received segments of ${target.fileObject.name} are successfully merged`);
     return merged;
   }

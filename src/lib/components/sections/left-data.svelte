@@ -58,7 +58,7 @@
             >
               <img alt="download icon" src="/download.svg" />
             </button>
-            <button class="data-buttons-button">
+            <button disabled class="data-buttons-button">
               <img alt="s3 icon" src="/s3.svg" />
             </button>
           </div>

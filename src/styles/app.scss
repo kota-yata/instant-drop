@@ -55,6 +55,10 @@ button {
 
 button {
   cursor: pointer;
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
 }
   
 .container {

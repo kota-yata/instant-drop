@@ -17,7 +17,7 @@ export class WS {
       this.localId = id;
     });
     try {
-      this.ws = new WebSocket('ws://106.72.33.225:8080/ws');
+      this.ws = new WebSocket('ws://wsjava.herokuapp.com/ws');
       // this.ws = new WebSocket('ws://localhost:8080/ws');
       this.logListStore.pushWithCurrentTimeStamp('Connecting to the signaling server...');
     } catch (err) {

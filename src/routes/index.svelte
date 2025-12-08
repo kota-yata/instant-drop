@@ -1,7 +1,6 @@
 <script lang="ts">
-  import LeftData from '$lib/components/sections/left-data.svelte';
   import LeftHeader from '$lib/components/sections/left-header.svelte';
-  import LeftPeers from '$lib/components/sections/left-peers.svelte';
+  import LeftConversation from '$lib/components/sections/left-conversation.svelte';
   import RightLog from '$lib/components/sections/right-log.svelte';
   import { WS } from '$lib/ws';
   import { onMount } from 'svelte';
@@ -16,8 +15,7 @@
 <div class="index">
   <div class="left">
     <LeftHeader />
-    <LeftPeers {ws} />
-    <LeftData />
+    <LeftConversation {ws} />
   </div>
   <div class="right">
     <RightLog />
@@ -35,6 +33,9 @@
     justify-content: space-between;
     & > .left {
       width: 60%;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
     & > .right {
       width: 40%;

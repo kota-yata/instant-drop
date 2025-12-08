@@ -1,4 +1,4 @@
-import { fileStore, idStore, LogListStore, logStore, ObjectListStore } from './store';
+import { chatStore, fileStore, idStore, LogListStore, logStore, ObjectListStore, ChatListStore } from './store';
 import type { WS } from './ws';
 import type { FileObject } from '$lib/objects/fileObject';
 import { WaitingObject } from './objects/waitingObject';
@@ -49,6 +49,7 @@ export class RTC {
   private dataChannel: RTCDataChannel;
   private logStore: LogListStore;
   private fileStore: ObjectListStore<File>;
+  private chatStore: ChatListStore;
   private ws: WS;
   private localId: string;
   private remoteId: string;
@@ -59,6 +60,7 @@ export class RTC {
   constructor(ws: WS, remoteId: string) {
     this.waitingObject = new WaitingObject();
     this.fileStore = new ObjectListStore<File>(fileStore);
+    this.chatStore = new ChatListStore(chatStore);
     this.logStore = new LogListStore(logStore);
     this.ws = ws;
     this.remoteId = remoteId;
@@ -127,13 +129,38 @@ export class RTC {
   public handleMessage(event: MessageEvent): void {
     const message = event.data;
     let file: File = null;
-    if (typeof message === 'string') { // FileObject
-      const fileObject: FileObject = JSON.parse(message);
-      file = this.waitingObject.addFileObject(fileObject);
-    } else { // Data
+    if (typeof message === 'string') {
+      try {
+        const obj = JSON.parse(message);
+        // Heuristic: treat as FileObject if it contains hashDigests array
+        if (obj && Array.isArray(obj.hashDigests)) {
+          const fileObject: FileObject = obj as unknown as FileObject;
+          file = this.waitingObject.addFileObject(fileObject);
+        } else {
+          // Treat as chat message envelope
+          const text: string = obj.text ?? obj.chatText ?? '';
+          if (typeof text === 'string' && text.length > 0) {
+            const fromId: string = obj.from ?? this.remoteId;
+            const toId: string = obj.to ?? this.localId;
+            this.chatStore.pushWithCurrentTimeStamp({ fromId, toId, text });
+          } else {
+            // Fallback: push raw string
+            this.chatStore.pushWithCurrentTimeStamp({ fromId: this.remoteId, toId: this.localId, text: String(message) });
+          }
+        }
+      } catch (_e) {
+        // Non-JSON string: treat as plain chat text
+        this.chatStore.pushWithCurrentTimeStamp({ fromId: this.remoteId, toId: this.localId, text: String(message) });
+      }
+    } else {
+      // Binary fragment for ongoing file transfer
       file = this.waitingObject.addFragment(message as ArrayBuffer);
     }
-    if (file) this.fileStore.push(file);
+    if (file) {
+      this.fileStore.push(file);
+      // Also add to chat timeline for the receiver side
+      this.chatStore.pushWithCurrentTimeStamp({ fromId: this.remoteId, toId: this.localId, file });
+    }
   }
   public send(data: string): void;
   public send(data: Blob): void;

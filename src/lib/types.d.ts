@@ -10,6 +10,14 @@ export interface Log {
   timeStamp: string
 }
 
+export interface ChatMessage {
+  fromId: string
+  toId: string
+  text?: string
+  file?: File
+  timeStamp: string
+}
+
 export type dataType = 'LocalId' | 'Peers' | 'Offer' | 'Answer' | 'IceCandidate' | 'Error';
 
 export interface ObjectInterface {
